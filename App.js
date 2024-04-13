@@ -1,7 +1,7 @@
 import { CameraView, useCameraPermissions } from 'expo-camera/next';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
+import LoginScreen from './LogIn';
 export default function App() {
   const [facing, setFacing] = useState('back');
   const [permission, requestPermission] = useCameraPermissions();
@@ -24,8 +24,9 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-
+      <LoginScreen />
       {
+        /*
         clicked ?
           scanned ? <Text>Scanned</Text> : <CameraView barcodeScannerSettings={{
             barcodeTypes: ["qr"],
@@ -36,6 +37,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
           </CameraView> : <Button title='Click Me' onPress={handleClick}>Click Me</Button>
+          */
       }
 
 
@@ -45,9 +47,10 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'black',
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'black',
   },
   camera: {
     flex: 1,
