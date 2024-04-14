@@ -1,5 +1,5 @@
 import { CameraView, useCameraPermissions } from 'expo-camera/next';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import LoginScreen from './LogIn'
@@ -17,13 +17,17 @@ export default function App() {
 
   const [isCameraMounted, setIsCameraMounted] = useState(false)
 
-  const permisionFunction = async () => {
-    const permission = await requestPermission();
-    console.log(permission);
-    if (permission.granted !== true) {
-      alert('Permission for media access needed.');
-    }
-  };
+
+  useEffect(() => {
+    const permisionFunction = async () => {
+      const permission = await requestPermission();
+      console.log(permission);
+      if (permission.granted !== true) {
+        alert('Permission for media access needed, please give camera access');
+      }
+    };
+    permisionFunction()
+  },[])
 
   useFocusEffect(
     useCallback(() => {
