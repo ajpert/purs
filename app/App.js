@@ -4,8 +4,7 @@ import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import LoginScreen from './LogIn'
 import StoreFront from './StoreFront'
-
-
+import EventManager from './EventManager';
 export default function App() {
   const [facing, setFacing] = useState('back');
   const [permission, requestPermission] = useCameraPermissions();
@@ -56,7 +55,7 @@ export default function App() {
         setInvalidQRCode(false);
         
         setIsCameraMounted(false)
-        router.push('/StoreFront');
+        router.push('/EventManager');
 
 
       } else {
