@@ -10,7 +10,7 @@ const LoginScreen = () => {
     };
 
     return (
-        <>
+        <View style={styles.container}>
             <Text style={styles.prompt}>Enter your phone number</Text>
             <View style={styles.inputContainer}>
                 <TextInput
@@ -24,12 +24,16 @@ const LoginScreen = () => {
             <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                 <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
-        </>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
+    container: {
 
+        alignItems: 'center',
+
+      },
     prompt: {
         fontSize: 18,
         marginBottom: 20,
@@ -53,6 +57,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 20,
         borderRadius: 25,
+        width: 300,
     },
     buttonText: {
         color: '#fff',
