@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
-const LoginScreen = () => {
+const LoginScreen = (props) => {
     const [phoneNumber, setPhoneNumber] = useState('');
 
     const handleSubmit = () => {
         // Handle phone number submission logic here
+        props.setClicked(true)
         console.log('Phone Number:', phoneNumber);
     };
 
