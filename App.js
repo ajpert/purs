@@ -7,6 +7,19 @@ export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const [clicked, setClicked] = useState(false)
 
+  
+  const permisionFunction = async () => {
+    // here is how you can get the camera permission\
+
+    const permission = await requestPermission();
+    console.log(permission)
+    if (
+      permission.granted !== true
+    ) {
+      alert('Permission for media access needed.');
+    }
+  };
+
 
   function handleClick() {
     setClicked(true)

@@ -8,18 +8,6 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "mediaLibraryPermissions": "The app needs access to your camera roll to select photos."
-        }
-      ],
-      [
-        "expo-barcode-scanner",
-        {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access camera."
-        }
       ]
     ],
     "name": "my-app",
