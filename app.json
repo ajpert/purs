@@ -8,7 +8,8 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
-      ]
+      ],
+      "expo-router"
     ],
     "name": "my-app",
     "slug": "my-app",
