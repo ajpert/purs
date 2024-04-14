@@ -1,7 +1,14 @@
 import { CameraView, useCameraPermissions } from 'expo-camera/next';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './LogIn';
+import BankScreen from './components/bankPage';
+
+
+const Stack = createStackNavigator();
+
 export default function App() {
   const [facing, setFacing] = useState('back');
   const [permission, requestPermission] = useCameraPermissions();
@@ -36,25 +43,14 @@ export default function App() {
   }
 
   return (
-    <View style={styles.container}>
-      <LoginScreen />
-      {
-        /*
-        clicked ?
-          scanned ? <Text>Scanned</Text> : <CameraView barcodeScannerSettings={{
-            barcodeTypes: ["qr"],
-          }} onBarcodeScanned={handleScan} style={styles.camera} facing={facing}>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-                <Text style={styles.text}>Flip Camera</Text>
-              </TouchableOpacity>
-            </View>
-          </CameraView> : <Button title='Click Me' onPress={handleClick}>Click Me</Button>
-          */
-      }
-
-
-    </View>
+    
+      <NavigationContainer>
+          <Stack.Navigator initialRouteName="Login">
+            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Home" component={BankScreen} options={{ headerShown: false }} />
+          </Stack.Navigator>
+      </NavigationContainer>
+      
   );
 }
 
