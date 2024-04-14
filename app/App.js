@@ -1,25 +1,38 @@
 import { CameraView, useCameraPermissions } from 'expo-camera/next';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
 import LoginScreen from './LogIn'
 import StoreFront from './StoreFront'
-
-import { router } from 'expo-router';
 
 
 export default function App() {
   const [facing, setFacing] = useState('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [clicked, setClicked] = useState(false);
+  const [invalidQRCode, setInvalidQRCode] = useState(false);
+  const [stopScanning, setStopScanning] = useState(false);
+
+
+
+  const [isCameraMounted, setIsCameraMounted] = useState(false)
 
   const permisionFunction = async () => {
     const permission = await requestPermission();
     console.log(permission);
-
     if (permission.granted !== true) {
       alert('Permission for media access needed.');
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+        setIsCameraMounted(true);
+      return () => {
+        setIsCameraMounted(false);
+      };
+    }, [])
+  );
 
   function handleClick() {
     setClicked(true);
@@ -27,10 +40,29 @@ export default function App() {
 
   const [scanned, setScanned] = useState(null);
 
-  handleScan = (data) => {
-    console.log(data);
-    setScanned(data);
-    router.replace('/StoreFront')
+  const handleScan = (data) => {
+    console.log(data.data);
+    try {
+      const scannedData = JSON.parse(data.data);
+      if (
+        scannedData.store_id === '1' &&
+        scannedData.qr_reference === '1'
+      ) {
+        setScanned(data);
+        setInvalidQRCode(false);
+        
+        setIsCameraMounted(false)
+        router.push('/StoreFront');
+
+
+      } else {
+        console.log('Invalid QR code format');
+        setInvalidQRCode(true);
+      }
+    } catch (error) {
+      console.log('Error parsing scanned data:', error);
+      setInvalidQRCode(true);
+    }
   };
 
   function toggleCameraFacing() {
@@ -39,31 +71,31 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      {clicked ? (
-        
-          <CameraView
-            barcodeScannerSettings={{
-              barcodeTypes: ['qr'],
-            }}
-            onBarcodeScanned={handleScan}
-            style={styles.camera}
-            facing={facing}
-          >
-            <View style={styles.scanAreaContainer}>
-              <View style={styles.scanAreaSquare} />
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={toggleCameraFacing}
-              >
-                <Text style={styles.text}>Scan Qr Code</Text>
-              </TouchableOpacity>
-            </View>
-          </CameraView>
-        )
-       : (
-        <LoginScreen setClicked={setClicked}/>
+      {clicked ? ( isCameraMounted ?
+        <CameraView
+          barcodeScannerSettings={{
+            barcodeTypes: ['qr'],
+          }}
+          onBarcodeScanned={stopScanning ? undefined : handleScan}
+          style={styles.camera}
+          facing={facing}
+        >
+          <View style={styles.scanAreaContainer}>
+            <View style={styles.scanAreaSquare} />
+            {invalidQRCode && (
+              <Text style={styles.invalidQRCodeText}>
+                Unrecognizable QR code
+              </Text>
+            )}
+          </View>
+          <View style={styles.buttonContainer}>
+
+              <Text style={styles.text}>Scan Qr Code</Text>
+
+          </View>
+        </CameraView> : <></>
+      ) : (
+        <LoginScreen setClicked={setClicked} />
       )}
     </View>
   );
@@ -75,7 +107,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'black',
-    color: 'white'
+    color: 'white',
   },
   camera: {
     width: '100%',
@@ -111,5 +143,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
+  },
+  invalidQRCodeText: {
+    color: 'red',
+    fontSize: 18,
+    marginTop: 10,
   },
 });

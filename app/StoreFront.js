@@ -11,26 +11,14 @@ const StoreFront = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.prompt}>Enter your phone number</Text>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Phone Number"
-                    keyboardType="phone-pad"
-                    value={phoneNumber}
-                    onChangeText={setPhoneNumber}
-                />
-            </View>
-            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Submit</Text>
-            </TouchableOpacity>
+            <Text style={styles.prompt}>Hello World</Text>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-
+        backgroundColor: 'black',
         alignItems: 'center',
 
       },

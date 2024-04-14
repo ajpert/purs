@@ -12,6 +12,7 @@
       "expo-router"
     ],
     "name": "my-app",
+    "scheme": "polaris",
     "slug": "my-app",
     "version": "1.0.0",
     "orientation": "portrait",
