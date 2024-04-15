@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Alert, AppState, StyleSheet, Text, View } from "react-native";
 import { Button, Input } from "react-native-elements";
 import { supabase } from "../lib/supabase";
@@ -22,6 +22,9 @@ export default function Auth({ phone, setPhone, setSentCode }) {
 	const [loading, setLoading] = useState(false);
 
 	async function signInWithPhone() {
+		// undo this
+		router.push("/storefront/customer");
+		return;
 		setLoading(true);
 		const { data, error } = await supabase.auth.signInWithOtp({
 			phone: `1${phone}`,

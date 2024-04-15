@@ -6,6 +6,7 @@ import OTPVerify from "../components/OTPVerify.jsx";
 import { supabase } from "../lib/supabase.js";
 import { Redirect } from "expo-router";
 
+
 export default function App() {
   const [session, setSession] = useState(null);
   const [phone, setPhone] = useState("");
@@ -21,9 +22,9 @@ export default function App() {
     });
   }, []);
 
-  if (session && session.user) {
+  /*if (session && session.user) {
     return <Redirect href={'/scan'} />;
-  }
+  }*/
 
   return (
     <View>
@@ -31,6 +32,9 @@ export default function App() {
         <OTPVerify phone={phone} />
       ) : (
         <Auth phone={phone} setPhone={setPhone} setSentCode={setSentCode} />
+      )}
+      {session && session.user && (
+        <Text style={styles.header}>Yay! You're authenticated!</Text>
       )}
     </View>
   );
