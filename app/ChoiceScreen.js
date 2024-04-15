@@ -9,6 +9,12 @@ const ChoiceScreen = () => {
         console.log('Phone Number:', phoneNumber);
     };
 
+    handleRoleSelection = (role) => {
+        console.log(role);
+        // Add any other code to execute when a role is selected
+    };
+
+
     return (
         <View style={styles.container}>
           <Text style={styles.text}>Let's Figure You Out 👋</Text>
@@ -16,20 +22,50 @@ const ChoiceScreen = () => {
             <Text style={styles.normalText}>Are you a customer or a Merchant ?</Text>
           </View>
           <View style={styles.buttonContainer}>
+          <TouchableOpacity
+                    style={[styles.button, styles.buttonBank]}
+                    onPress={() => handleRoleSelection('Bank')}>
+                    <Image
+                    style={styles.buttonLogo}
+                    source={require('../assets/bank.png')}
+                    />
+                    <Text style={styles.buttonText}> Connect to Bank</Text>
+                    <Image
+                    style={styles.buttonEdit}
+                    source={require('../assets/edit.png')}
+                    />
+                </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.button, styles.buttonCustomer]}
                     onPress={() => handleRoleSelection('Customer')}>
                     <Image
                     style={styles.buttonLogo}
-                    source={require('../assets/merchant.svg')}
+                    source={require('../assets/customer.png')}
                     />
                     <Text style={styles.buttonText}>Customer</Text>
+
+                    <Image
+                    style={styles.buttonArrow}
+                    source={require('../assets/arrow-1.png')}
+                    />
+                    
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.button, styles.buttonMerchant]}
                     onPress={() => handleRoleSelection('Merchant')}>
+                    <Image
+                    style={styles.buttonLogo}
+                    source={require('../assets/merchant-1.png')}
+                    />
                     <Text style={styles.buttonText}>Merchant</Text>
+                    <Image
+                    style={styles.buttonArrow}
+                    source={require('../assets/arrow-1.png')}
+                    />
                 </TouchableOpacity>
+                
+
+                
             </View>
         </View>
     );
@@ -55,40 +91,62 @@ const styles = StyleSheet.create({
     },
     normalText: {
         fontSize: 18,
-        color: '#fff', // White text color
+        color: '#fff', 
         textAlign: 'left',
         marginLeft: 10,
     },
     buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginTop: 150,
+        flexDirection: 'column',
+       
+        marginTop: 50,
         width: '100%',
-        marginRight: 20,
+        
     },
     button: {
+        flexDirection: 'row',
         justifyContent: 'center',
+        marginBottom: 20,
         alignItems: 'center',
-        borderRadius: 10,
-        width: '40%',
+        borderRadius: 40,
+        marginLeft: 40,
+        width: '80%',
         height: 100,
     },
     buttonCustomer: {
-        backgroundColor: '#FFC94A', // Green color for customer button
+        
+        backgroundColor: '#FFC94A', 
     },
     buttonMerchant: {
-        backgroundColor: '#5BBCFF', // Orange color for merchant button
+        backgroundColor: '#5BBCFF', 
+    },
+    buttonBank: {
+        backgroundColor: '#fff', 
     },
     buttonText: {
-        fontSize: 18,
-        color: '#fff', // White text color
+        fontSize: 25,
+        color: '#fff', 
         textAlign: 'center',
+        color: 'black',
     },
     buttonLogo: {
-        width: 20, // Adjust these values as needed
-        height: 20, // Adjust these values as needed
-        marginRight: 10, // Add some margin to separate the logo from the text
+        width: 40, 
+        height: 40, 
+        marginleft: 30, 
+        marginRight: 10, // Add this line
       },
+    buttonArrow: {
+        width: 40, 
+        height: 40, 
+        marginLeft: 10, 
+       
+    },
+    buttonEdit: {
+        width: 40, 
+        height: 40, 
+        marginLeft: 10,
+    },
+
+        
 });
 
 
