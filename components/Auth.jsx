@@ -23,7 +23,7 @@ export default function Auth({ phone, setPhone, setSentCode }) {
 
 	async function signInWithPhone() {
 		// undo this
-		router.push("/storefront/customer");
+		router.push("/ChoiceScreen");
 		return;
 		setLoading(true);
 		const { data, error } = await supabase.auth.signInWithOtp({

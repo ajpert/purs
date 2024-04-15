@@ -6,13 +6,26 @@ import OTPVerify from "../components/OTPVerify.jsx";
 import { supabase } from "../lib/supabase.js";
 import { Redirect } from "expo-router";
 
+import { useAuth } from "../hooks/useAuth.js";
+import { AuthProvider } from "../context/AuthContext.js";
 
 export default function App() {
   const [session, setSession] = useState(null);
   const [phone, setPhone] = useState("");
   const [sentCode, setSentCode] = useState(false);
 
+  
   useEffect(() => {
+    const fetchData = async () => {
+      const { data: userData, error: userError } = await supabase.auth.getUser()
+
+      // Handle the fetched data and error here
+      console.log(userData)
+      console.log(userError)
+    };
+
+    fetchData();
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
@@ -22,10 +35,10 @@ export default function App() {
     });
   }, []);
 
-  /*if (session && session.user) {
-    return <Redirect href={'/scan'} />;
-  }*/
-
+  if (session && session.user) {
+    console.log("WE IN HERE")
+    return <Redirect href={'ChoiceScreen'} />;
+  }
   return (
     <View>
       {sentCode ? (

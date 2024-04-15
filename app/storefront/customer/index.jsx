@@ -1,9 +1,16 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ScrollView, View } from "react-native";
 import { Header } from "react-native-elements";
 import { Button, Card, Paragraph, Title } from "react-native-paper";
+
+import { supabase } from "../../../lib/supabase";
+
+
+import { useAuth } from "../../../hooks/useAuth";
+
+
 
 const randomUUID = () => {
 	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -47,7 +54,22 @@ const mockData = [
 ];
 
 export default function CustomerStoreFront() {
+	const [session, setSession] = useState(null);
+
+	const [data, setData] = useState(null);
+	useEffect(() => {
+
+		async function f() {
+			const {data, error} = await supabase.from('test').select('*')
+
+
+
+			setData(data)
+		}
+		f()
+	}, [])
 	const [cart, setCart] = useState([]);
+	console.log(data)
 
 	const handlePress = async () => {
 		await AsyncStorage.setItem("cart", JSON.stringify(cart));
