@@ -1,39 +1,38 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, SafeAreaView, StyleSheet, Image, Modal, Button } from 'react-native';
+
 
 const ChoiceScreen = () => {
-    const [phoneNumber, setPhoneNumber] = useState('');
+   
+    const [modalVisible, setModalVisible] = useState(false);
 
     const handleSubmit = () => {
         // Handle phone number submission logic here
         console.log('Phone Number:', phoneNumber);
+        
     };
 
     handleRoleSelection = (role) => {
         console.log(role);
-        // Add any other code to execute when a role is selected
+        if(role == 'Bank') {
+            setModalVisible(true);
+        }
+        
     };
-
-
     return (
         <View style={styles.container}>
-          <Text style={styles.text}>Let's Figure You Out 👋</Text>
-          <View style={styles.textContainer}>
-            <Text style={styles.normalText}>Are you a customer or a Merchant ?</Text>
-          </View>
-          <View style={styles.buttonContainer}>
-          <TouchableOpacity
+            <Text style={styles.text}>Let's Figure You Out 👋</Text>
+            <View style={styles.textContainer}>
+                <Text style={styles.normalText}>Are you a customer or a Merchant?</Text>
+            </View>
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity
                     style={[styles.button, styles.buttonBank]}
                     onPress={() => handleRoleSelection('Bank')}>
-                    <Image
-                    style={styles.buttonLogo}
-                    source={require('../assets/bank.png')}
-                    />
-                    <Text style={styles.buttonText}> Connect to Bank</Text>
-                    <Image
-                    style={styles.buttonEdit}
-                    source={require('../assets/edit.png')}
-                    />
+                    <Image style={styles.buttonLogo} source={require('../assets/bank.png')} />
+                    <Text style={styles.buttonText}>Connect to Bank</Text>
+                    <Image style={styles.buttonEdit} source={require('../assets/edit.png')} />
+                    <BankConnectionModal visible={modalVisible} onClose={() => setModalVisible(false)} />
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.button, styles.buttonCustomer]}
@@ -62,14 +61,53 @@ const ChoiceScreen = () => {
                     style={styles.buttonArrow}
                     source={require('../assets/arrow-1.png')}
                     />
-                </TouchableOpacity>
-                
-
-                
+                </TouchableOpacity> 
             </View>
         </View>
     );
 };
+
+const BankConnectionModal = ({ visible, onClose }) => {
+    const [accountNumber, setAccountNumber] = useState('');
+    const [routingNumber, setRoutingNumber] = useState('');
+    const [accountHolderName, setAccountHolderName] = useState('');
+    return (
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={visible}
+            onRequestClose={onClose}
+        >
+            <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={setAccountNumber}
+                        value={accountNumber}
+                        placeholder="Account Number"
+                    />
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={setRoutingNumber}
+                        value={routingNumber}
+                        placeholder="Routing Number"
+                    />
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={setAccountHolderName}
+                        value={accountHolderName}
+                        placeholder="Account Holder Name"
+                    />
+                    <Button
+                        title="Submit"
+                        onPress={onClose}
+                    />
+                </View>
+            </View>
+        </Modal>
+    );
+};
+
 
 const styles = StyleSheet.create({
     container: {
@@ -131,8 +169,8 @@ const styles = StyleSheet.create({
     buttonLogo: {
         width: 40, 
         height: 40, 
-        marginleft: 30, 
-        marginRight: 10, // Add this line
+        marginLeft: 30, 
+        marginRight: 10, 
       },
     buttonArrow: {
         width: 40, 
@@ -145,8 +183,34 @@ const styles = StyleSheet.create({
         height: 40, 
         marginLeft: 10,
     },
-
-        
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    input: {
+        height: 40,
+        margin: 12,
+        borderWidth: 1,
+        padding: 10,
+        width: 200,
+    }
 });
 
 
