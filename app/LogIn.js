@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = (props) => {
     const [phoneNumber, setPhoneNumber] = useState('');
 
     const handleSubmit = () => {
+        // Handle phone number submission logic here
+        props.setClicked(true)
         console.log('Phone Number:', phoneNumber);
-        navigation.navigate('Home'); // Adjust 'Home' to the name of the screen you want to navigate to
     };
 
     return (
@@ -30,11 +31,10 @@ const LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+
         alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'black',
-    },
+
+      },
     prompt: {
         fontSize: 18,
         marginBottom: 20,
