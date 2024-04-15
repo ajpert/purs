@@ -2,7 +2,6 @@ import { CameraView, useCameraPermissions } from "expo-camera/next";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import LoginScreen from "../LogIn";
 export default function App() {
   const [facing, setFacing] = useState("back");
   const [permission, requestPermission] = useCameraPermissions();
@@ -64,33 +63,29 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      {clicked ? (
-        isCameraMounted ? (
-          <CameraView
-            barcodeScannerSettings={{
-              barcodeTypes: ["qr"],
-            }}
-            onBarcodeScanned={stopScanning ? undefined : handleScan}
-            style={styles.camera}
-            facing={facing}
-          >
-            <View style={styles.scanAreaContainer}>
-              <View style={styles.scanAreaSquare} />
-              {invalidQRCode && (
-                <Text style={styles.invalidQRCodeText}>
-                  Unrecognizable QR code
-                </Text>
-              )}
-            </View>
-            <View style={styles.buttonContainer}>
-              <Text style={styles.text}>Scan Qr Code</Text>
-            </View>
-          </CameraView>
-        ) : (
-          <></>
-        )
+      {isCameraMounted ? (
+        <CameraView
+          barcodeScannerSettings={{
+            barcodeTypes: ["qr"],
+          }}
+          onBarcodeScanned={stopScanning ? undefined : handleScan}
+          style={styles.camera}
+          facing={facing}
+        >
+          <View style={styles.scanAreaContainer}>
+            <View style={styles.scanAreaSquare} />
+            {invalidQRCode && (
+              <Text style={styles.invalidQRCodeText}>
+                Unrecognizable QR code
+              </Text>
+            )}
+          </View>
+          <View style={styles.buttonContainer}>
+            <Text style={styles.text}>Scan Qr Code</Text>
+          </View>
+        </CameraView>
       ) : (
-        <LoginScreen setClicked={setClicked} />
+        <Text>Camera is not mounted</Text>
       )}
     </View>
   );
