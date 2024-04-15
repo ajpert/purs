@@ -1,16 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { Appbar, PaperProvider } from "react-native-paper";
+import { Appbar, PaperProvider, Modal, Portal, Button } from "react-native-paper";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import QrCreator from '../../components/QrCreator';
+import { useNavigation, useRouter } from 'expo-router';
+
 
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
+function Header(props) {
+    const navigation = useNavigation();
+    const router = useRouter();
+    const [isNavigationReady, setIsNavigationReady] = useState(false);
 
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('state', () => {
+            setIsNavigationReady(true);
+        });
+
+        return unsubscribe;
+    }, [navigation]);
+
+    return (
+        <Appbar.Header statusBarHeight={30} style={{ backgroundColor: "black" }}>
+            {isNavigationReady && (
+                <Appbar.BackAction
+                    onPress={() => {
+                        router.back();
+                    }}
+                    color={"#F24E1E"}
+                />
+            )}
+
+            <Appbar.Content
+                title="Event Manager"
+                titleStyle={{ color: 'white', fontSize: 30 }}
+            />
+            <Appbar.Action icon="plus" color={"#F24E1E"} onPress={() => { props.showModal() }} />
+        </Appbar.Header>
+    );
+}
 
 
 
 const EventManager = (props) => {
+    const [visible, setVisible] = React.useState(false);
+    const [eventName, setEventName] = useState('');
+    const showModal = () => setVisible(true);
+    const hideModal = () => setVisible(false);
 
     const [EventData, setEventData] = useState([
         {
@@ -25,71 +63,158 @@ const EventManager = (props) => {
     ])
     const [phoneNumber, setPhoneNumber] = useState('');
 
-    const handleSubmit = () => {
-        // Handle phone number submission logic here
-        props.setClicked(true)
-        console.log('Phone Number:', phoneNumber);
-    };
-
+    function addEvent() {
+        if (eventName.trim() === '') {
+            // Show a warning or alert if the input is empty or contains only whitespace
+            alert('Please enter an event name');
+            return;
+        }
+    
+        setEventData([...EventData, { "event-name": eventName.trim() }]);
+        setEventName('');
+        hideModal();
+    }
     return (
-        <View style={{ flex: 1, backgroundColor: 'black' }}>
-            <Appbar.Header statusBarHeight={30} style={{ backgroundColor: "black" }}>
-                <Appbar.BackAction
-                    onPress={() => {
-                        router.back()
-                    }}
-                    color={"#F24E1E"}
-                />
-                <Appbar.Content
-                    title="Event Manager"
-                    titleStyle={{ color: 'white', fontSize: 30 }} // Adjust fontSize or other styles
-                />
+        <PaperProvider>
+            <Portal>
+                <Modal
+                    visible={visible}
+                    onDismiss={hideModal}
+                    contentContainerStyle={styles.modal}
+                    presentationStyle="overFullScreen"
+                >
+                    <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>QR Creation</Text>
+                    </View>
 
-            </Appbar.Header>
-            <ScrollView>
-                <View style={styles.container}>
+                    <View style={styles.modalBody}>
+                        <Text style={{ alignSelf: 'center', fontWeight: 'bold' }}>Name</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter Event Name"
+                            placeholderTextColor="#888"
+                            value={eventName}
+                            onChangeText={setEventName}
+                        />
 
-                    {
-                        EventData.map((event) => {
-                            return (<>
-                                <TouchableOpacity style={styles.button} onPress={() => { console.log("YIPEE") }}>
-                                    <View style={styles.buttonContent}>
-                                        {/* Left Icon */}
-                                        <Icon name="qrcode" size={30} color="black" />
-
-                                        <Text style={styles.buttonText}>{event['event-name']}</Text>
-
-                                        {/* Right Icon */}
-                                        <Icon name="arrow-right-bold" size={30} color="black" />
-                                    </View>
-                                </TouchableOpacity>
-
-                            </>
-
-                            )
-                        })
-                    }
-                    <TouchableOpacity style={styles.addButton} onPress={() => {
-                        setEventData([...EventData, {
-                            "event-name": "table 1"
-                        }])
-                    }}>
-                        <View style={styles.buttonContent}>
-
-                            <Icon name="plus" size={50} color="white" />
-                            <Text style={{ ...styles.buttonText, color: 'white' }}>Add Event</Text>
+                        <View style={styles.optionsContainer}>
+                            <Text style={styles.optionPlaceholder}>Options Placeholder</Text>
                         </View>
-                    </TouchableOpacity>
+                    </View>
+                    <QrCreator />
+                    <View style={styles.modalFooter}>
+                        <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={hideModal}>
+                            <Text style={styles.buttonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={addEvent} style={[styles.button, styles.createButton]} >
+                            <Text style={styles.buttonText}>Create</Text>
+                        </TouchableOpacity>
+                    </View>
 
-                </View>
-            </ScrollView>
+                </Modal>
+            </Portal>
+            <View style={{ flex: 1, backgroundColor: 'black' }}>
+                <Header showModal={showModal} />
+
+                <ScrollView>
+                    <View style={styles.container}>
 
 
-        </View>
+                        {
+                            EventData.map((event) => {
+                                return (<>
+                                    <TouchableOpacity style={styles.eventButton} onPress={() => { console.log("YIPEE") }}>
+                                        <View style={styles.eventButtonContent}>
+                                            {/* Left Icon */}
+                                            <Icon name="qrcode" size={30} color="black" />
+
+                                            <Text style={styles.buttonText}>{event['event-name']}</Text>
+
+                                            {/* Right Icon */}
+                                            <Icon name="arrow-right-bold" size={30} color="black" />
+                                        </View>
+                                    </TouchableOpacity>
+
+                                </>
+
+                                )
+                            })
+                        }
+
+
+                    </View>
+                </ScrollView>
+
+
+            </View>
+        </PaperProvider>
+
     );
 };
 
 const styles = StyleSheet.create({
+    modal: {
+
+        justifyContent: 'flex-start',
+        backgroundColor: 'white',
+        padding: 20,
+        alignSelf: 'center',
+        width: '80%',
+
+        maxWidth: 400,
+        height: '80%',
+        borderRadius: 10,
+        marginHorizontal: 20, // Add horizontal margin
+        marginVertical: 0, // Remove or reduce the top margin
+    },
+
+    modalTitle: {
+        color: 'black',
+        alignSelf: 'center',
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    modalBody: {
+        padding: 16,
+    },
+    input: {
+        backgroundColor: '#f0f0f0',
+        borderRadius: 8,
+        height: 40,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        marginBottom: 16,
+    },
+    optionsContainer: {
+        backgroundColor: '#f0f0f0',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+    },
+    optionPlaceholder: {
+        color: '#888',
+    },
+    modalFooter: {
+        flexDirection: 'row',
+
+        justifyContent: 'space-between',
+
+        borderBottomLeftRadius: 10,
+        borderBottomRightRadius: 10,
+    },
+    button: {
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        borderRadius: 8,
+    },
+    cancelButton: {
+        backgroundColor: '#ccc',
+    },
+    createButton: {
+        backgroundColor: '#F24E1E',
+    },
+
+
     container: {
 
         alignItems: 'center',
@@ -110,10 +235,8 @@ const styles = StyleSheet.create({
         height: 50,
         justifyContent: 'center'
     },
-    input: {
-        fontSize: 16,
-    },
-    button: {
+
+    eventButton: {
         backgroundColor: 'white',
         paddingVertical: 12,
         paddingHorizontal: 20,
@@ -123,7 +246,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginBottom: 15
     },
-    buttonContent: {
+    eventButtonContent: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',

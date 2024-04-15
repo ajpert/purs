@@ -4,6 +4,7 @@ import "react-native-url-polyfill/auto";
 import Auth from "../components/Auth.jsx";
 import OTPVerify from "../components/OTPVerify.jsx";
 import { supabase } from "../lib/supabase.js";
+import { Redirect } from "expo-router";
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -20,15 +21,16 @@ export default function App() {
     });
   }, []);
 
+  if (session && session.user) {
+    return <Redirect href={'/scan'} />;
+  }
+
   return (
     <View>
       {sentCode ? (
         <OTPVerify phone={phone} />
       ) : (
         <Auth phone={phone} setPhone={setPhone} setSentCode={setSentCode} />
-      )}
-      {session && session.user && (
-        <Text style={styles.header}>Yay! You're authenticated!</Text>
       )}
     </View>
   );
