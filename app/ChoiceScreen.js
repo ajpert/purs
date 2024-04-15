@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, StyleSheet, Image, Modal, Button } from 'react-native';
+import { router } from 'expo-router';
 
+import { useAuth } from '../hooks/useAuth';
 
 const ChoiceScreen = () => {
-   
+
     const [modalVisible, setModalVisible] = useState(false);
 
     const handleSubmit = () => {
@@ -14,8 +16,14 @@ const ChoiceScreen = () => {
 
     handleRoleSelection = (role) => {
         console.log(role);
-        if(role == 'Bank') {
+        if(role == 'Customer') {
+            router.push('/scan')
+        }
+        else if(role == 'Bank') {
             setModalVisible(true);
+        }
+        else if(role =='Merchant') {
+            router.push('/event-manager')
         }
         
     };

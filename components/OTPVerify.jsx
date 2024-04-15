@@ -37,7 +37,7 @@ export default function OTPVerify({ phone }) {
 			Alert.alert(error.message);
 		} else {
 			setLoading(false);
-			router.push("/storefront/customer");
+			    router.push("/ChoiceScreen");
 		}
 	}
 

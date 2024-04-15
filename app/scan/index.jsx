@@ -46,7 +46,7 @@ export default function App() {
         setInvalidQRCode(false);
 
         setIsCameraMounted(false);
-        router.push("/event-manager");
+        router.push("/storefront/customer");
       } else {
         console.log("Invalid QR code format");
         setInvalidQRCode(true);
