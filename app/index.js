@@ -1,14 +1,9 @@
-import App from "./App";
 import { PaperProvider } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import App from "./App";
 export default function Index() {
-  
   return (
-
     <PaperProvider>
-      <App/>
+      <App />
     </PaperProvider>
-
-
-  )
+  );
 }
