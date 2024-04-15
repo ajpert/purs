@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import React, { useState } from "react";
 import { AppState, StyleSheet, Text, View } from "react-native";
 import { Button, Input } from "react-native-elements";
@@ -34,6 +35,9 @@ export default function OTPVerify({ phone }) {
 		if (error) {
 			setLoading(false);
 			Alert.alert(error.message);
+		} else {
+			setLoading(false);
+			router.push("/scan");
 		}
 	}
 
