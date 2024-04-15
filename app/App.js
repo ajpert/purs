@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import "react-native-url-polyfill/auto";
-import Auth from "../components/Auth.jsx";
-import OTPVerify from "../components/OTPVerify.jsx";
-import { supabase } from "../lib/supabase.js";
+import { CameraView, useCameraPermissions } from 'expo-camera/next';
+import { useState, useCallback, useEffect } from 'react';
+import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+
+import ChoiceScreen from './ChoiceScreen'
+
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -21,15 +22,35 @@ export default function App() {
   }, []);
 
   return (
-    <View>
-      {sentCode ? (
-        <OTPVerify phone={phone} />
+    <View style={styles.container}>
+      {/* {clicked ? ( isCameraMounted ?
+        <CameraView
+          barcodeScannerSettings={{
+            barcodeTypes: ['qr'],
+          }}
+          onBarcodeScanned={stopScanning ? undefined : handleScan}
+          style={styles.camera}
+          facing={facing}
+        >
+          <View style={styles.scanAreaContainer}>
+            <View style={styles.scanAreaSquare} />
+            {invalidQRCode && (
+              <Text style={styles.invalidQRCodeText}>
+                Unrecognizable QR code
+              </Text>
+            )}
+          </View>
+          <View style={styles.buttonContainer}>
+
+              <Text style={styles.text}>Scan Qr Code</Text>
+
+          </View>
+        </CameraView> : <></>
       ) : (
-        <Auth phone={phone} setPhone={setPhone} setSentCode={setSentCode} />
-      )}
-      {session && session.user && (
-        <Text style={styles.header}>Yay! You're authenticated!</Text>
-      )}
+        <LoginScreen setClicked={setClicked} />
+      )} */}
+      <ChoiceScreen />
+      
     </View>
   );
 }
