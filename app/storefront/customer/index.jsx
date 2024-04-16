@@ -1,15 +1,59 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router, useFocusEffect } from "expo-router";
-import React, { useState, useEffect } from "react";
+import { router, useFocusEffect, useNavigation, useRouter } from "expo-router";
+import React, { useState, useEffect, useContext } from "react";
 import { ScrollView, View } from "react-native";
 import { Header } from "react-native-elements";
-import { Button, Card, Paragraph, Title } from "react-native-paper";
+import { Button, Card, Paragraph, Title,Appbar } from "react-native-paper";
 
 import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams } from "expo-router";
 
 import { useAuth } from "../../../hooks/useAuth";
 import { useSupabaseChannel } from "../../../hooks/useSupabaseChannel";
+import { RoleContext } from "../../../context/RoleContext";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+
+function HeaderComponent(props) {
+	const navigation = useNavigation();
+	const router = useRouter();
+	const [isNavigationReady, setIsNavigationReady] = useState(false);
+
+	useEffect(() => {
+		const unsubscribe = navigation.addListener("state", () => {
+			setIsNavigationReady(true);
+		});
+
+		return unsubscribe;
+	}, [navigation]);
+
+	return (
+		<Appbar.Header
+			statusBarHeight={30}
+			style={{ backgroundColor: "black" }}
+		>
+			{isNavigationReady && (
+				<Appbar.BackAction
+					onPress={() => {
+						router.back();
+					}}
+					color={"white"}
+				/>
+			)}
+
+			<Appbar.Content
+				title="Store Front"
+				titleStyle={{ color: "white", fontSize: 30 }}
+			/>
+			<Appbar.Action
+				icon="cog"
+				color={"white"}
+				onPress={() => {
+					props.showModal();
+				}}
+			/>
+		</Appbar.Header>
+	);
+}
 
 
 const randomUUID = () => {
@@ -31,30 +75,31 @@ const mockData = [
 		id: randomUUID(),
 		name: "Bacon",
 		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=1",
+		imageUrl: "http://placebacon.net/400/300?image=2",
 	},
 	{
 		id: randomUUID(),
 		name: "Bacon",
 		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=1",
+		imageUrl: "http://placebacon.net/400/300?image=3",
 	},
 	{
 		id: randomUUID(),
 		name: "Bacon",
 		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=1",
+		imageUrl: "http://placebacon.net/400/300?image=4",
 	},
 	{
 		id: randomUUID(),
 		name: "Bacon",
 		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=1",
+		imageUrl: "http://placebacon.net/400/300?image=5",
 	},
 ];
 
 export default function CustomerStoreFront() {
-
+	const { role } = useContext(RoleContext);
+	console.log("ROLE", role)
 	const { qr_reference } = useLocalSearchParams()
 
 	const [session, setSession] = useState(null);
@@ -63,9 +108,9 @@ export default function CustomerStoreFront() {
 
 	const [cart, setCart] = useState([]);
 
-	const temp = useSupabaseChannel("test2", qr_reference)
+	//const temp = useSupabaseChannel("test2", qr_reference)
 
-	console.log("TEMP", temp.length)
+	//console.log("TEMP", temp.length)
 
 
 	useFocusEffect(
@@ -75,16 +120,16 @@ export default function CustomerStoreFront() {
 					const { data: getTest, error: errorTest } = await supabase
 						.from('test2')
 						.select('testData')
-						.eq('id', qr_reference)
+						.eq('qr_id', qr_reference)
 						.single();
 
 					if (errorTest) {
-						console.error('Error fetching initial testData:', errorTest);
+						console.error('Error fetching initial testData3:', errorTest);
 					} else {
 						setCart(getTest.testData);
 					}
 				} catch (error) {
-					console.error('Error fetching initial data:', error);
+					console.error('Error fetching initial data4:', error);
 				}
 			};
 
@@ -97,7 +142,7 @@ export default function CustomerStoreFront() {
 						event: "*",
 						schema: "public",
 						table: 'test2',
-						filter: `id=eq.${qr_reference}`,
+						filter: `qr_id=eq.${qr_reference}`,
 					},
 					(payload) => {
 
@@ -122,17 +167,18 @@ export default function CustomerStoreFront() {
 
 	};
 
-	const handleAddToCart = async () => {
+	const handleAddToCart = async (item) => {
+		const { data: { user } } = await supabase.auth.getUser()
 		try {
 			// Fetch the existing testData from the database
 			const { data: getTest, error: errorTest } = await supabase
 				.from('test2')
 				.select('testData')
-				.eq('id', qr_reference)
+				.eq('qr_id', qr_reference)
 				.single();
 
 			if (errorTest) {
-				console.error('Error fetching testData:', errorTest);
+				console.error('Error fetching testData5:', errorTest);
 				return;
 			}
 
@@ -143,15 +189,25 @@ export default function CustomerStoreFront() {
 				description: 'The best bacon in town.',
 				imageUrl: 'http://placebacon.net/400/300?image=1',
 			};
+			item.id = randomUUID();
+
+			if (role === "Customer") {
+				item.owner = user.id;
+			}
+			else {
+				console.log("ADDING FROM MERCHANT")
+				item.owner = ""
+			}
+
 
 			// Combine the existing testData with the new item
-			const newData = [...getTest.testData, newItem];
+			const newData = [...getTest.testData, item];
 
 			// Update the testData in the database
 			const { data, error } = await supabase
 				.from('test2')
 				.update({ testData: newData })
-				.eq('id', qr_reference)
+				.eq('qr_id', qr_reference)
 				.select();
 
 			if (error) {
@@ -171,21 +227,7 @@ export default function CustomerStoreFront() {
 
 	return (
 		<View style={{ flex: 1, backgroundColor: "#171717" }}>
-			<Header
-				leftComponent={<Button title="Back" style={{ backgroundColor: 'white' }} onPress={() => router.back()} />}
-				centerComponent={{
-					text: "Storefront",
-					style: {
-						color: "#fff",
-						fontSize: 32,
-						fontWeight: "bold",
-					},
-				}}
-
-				containerStyle={{
-					backgroundColor: "#171717",
-				}}
-			/>
+			<HeaderComponent/>
 
 			<ScrollView style={{ padding: 10 }}>
 				{mockData.map((item) => (
@@ -225,7 +267,7 @@ export default function CustomerStoreFront() {
 								borderRadius: 10,
 								backgroundColor: "#3f3f46",
 							}}
-							onPress={handleAddToCart}
+							onPress={() => handleAddToCart(item)}
 						>
 							Add to Cart
 						</Button>

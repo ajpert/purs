@@ -1,4 +1,4 @@
-import { useNavigation, useRouter } from "expo-router";
+import { router, useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ScrollView,
@@ -13,6 +13,7 @@ import QrCreator from "../../components/QrCreator";
 import { supabase } from "../../lib/supabase";
 
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import useAuth from "../../hooks/useAuth";
 
 function Header(props) {
 	const navigation = useNavigation();
@@ -37,7 +38,7 @@ function Header(props) {
 					onPress={() => {
 						router.back();
 					}}
-					color={"#F24E1E"}
+					color={"white"}
 				/>
 			)}
 
@@ -47,7 +48,7 @@ function Header(props) {
 			/>
 			<Appbar.Action
 				icon="plus"
-				color={"#F24E1E"}
+				color={"white"}
 				onPress={() => {
 					props.showModal();
 				}}
@@ -55,33 +56,115 @@ function Header(props) {
 		</Appbar.Header>
 	);
 }
+const randomUUID = () => {
+	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+		const r = (Math.random() * 16) | 0;
+		const v = c === "x" ? r : (r & 0x3) | 0x8;
+		return v.toString(16);
+	});
+};
 
 const EventManager = (props) => {
 	const [visible, setVisible] = React.useState(false);
 	const [eventName, setEventName] = useState("");
-	const showModal = () => setVisible(true);
-	const hideModal = () => setVisible(false);
+	const showModal = () => { 
+		setCancleOrDelete('Cancle'); 
+		setUpdateOrAdd('Create');
+		setEventName(""); 
+		setGenerateQrData(randomUUID()); 
+		setVisible(true) };
+
+	const hideModal = () => {
+
+		setVisible(false)
+		
+	};
 	const [events, setEvents] = useState([]);
 
+	const [currentEventId, setCurrentEventId] = useState(null);
+	const { session, profile } = useAuth();
+	const [generateQrData, setGenerateQrData] = useState(null);
+
+
+	const [cancelOrDelete, setCancleOrDelete] = useState('Cancel');
+	const [updateOrCreate, setUpdateOrAdd] = useState('Create');
+
 	const addNewEvent = async () => {
+		console.log(generateQrData)
+		const { data: { user } } = await supabase.auth.getUser()
 		try {
+			const { data: qrData, error: qrError } = await supabase.
+				from('test2')
+				.insert([
+					{
+						testData: [],
+						qr_id: generateQrData
+					}
+				])
+				.select()
+
+			console.log(qrData, qrError)
+
+
+			console.log("session", user.id);
 			const { data, error } = await supabase
 				.from("events")
-				.insert({ name: eventName, phone_number: phoneNumber });
+				.insert({ name: eventName, phone_number: "12392855148", cart_id: generateQrData })
+				.eq("merchant_id", user.id);
+			getEvents();
+			console.log(data)
 			if (error) {
-				console.log("Error", error);
+				throw error;
 			}
-			console.log(data);
 		} catch (error) {
 			console.log("Error", error);
 		}
 	};
 
-	const getEvents = async () => {
+	const updateEvent = async () => {
+		const { data: { user } } = await supabase.auth.getUser()
 		try {
-			const { data, error } = await supabase.from("events").select("*");
+			const { data, error } = await supabase
+				.from("events")
+				.update({ name: eventName })
+				.eq("id", currentEventId)
+				.select();
 			if (error) {
-				console.log("Error", error);
+				console.log("Error updating event:", error);
+				// Display an error message to the user if needed
+			  }		  
+			console.log("UPDATE", data)
+			await getEvents();
+			if (error) {
+				throw error;
+			}
+		} catch (error) {
+			console.log("Error", error);
+		}
+
+	}
+
+	function handleLongPress(event) {
+		setCancleOrDelete('Delete');
+		setUpdateOrAdd('Update');
+		setGenerateQrData(event.cart_id);
+		setEventName(event.name);
+		setVisible(true);
+		setCurrentEventId(event.id);
+		console.log(event)
+
+	}
+
+	const getEvents = async () => {
+		const { data: { user } } = await supabase.auth.getUser()
+		try {
+			const { data, error } = await supabase
+				.from("events")
+				.select("*")
+				.eq("merchant_id", user.id);
+
+			if (error) {
+				throw error;
 			}
 			setEvents(data);
 		} catch (error) {
@@ -89,21 +172,47 @@ const EventManager = (props) => {
 		}
 	};
 
+	/*
+		useEffect(() => {
+			(async () => {
+				await getEvents();
+			})();
+		}, [events]);
+	*/
 	useEffect(() => {
-		getEvents();
-	}, [events]);
+		(async () => {
+			await getEvents();
+		})();
+	}, []);
 
-	const [phoneNumber, setPhoneNumber] = useState("");
 
-	async function addEvent() {
-		if (eventName.trim() === "") {
-			// Show a warning or alert if the input is empty or contains only whitespace
-			alert("Please enter an event name");
-			return;
+
+	async function addOrUpdateEvent(type) {
+		if (type === "Create") {
+			if (eventName.trim() === "") {
+				// Show a warning or alert if the input is empty or contains only whitespace
+				alert("Please enter an event name");
+				return;
+			}
+			await addNewEvent();
+			setEventName("");
+			hideModal();
 		}
-		await addNewEvent();
-		setEventName("");
-		hideModal();
+		if (type === "Update") {
+			if (eventName.trim() === "") {
+				// Show a warning or alert if the input is empty or contains only whitespace
+				alert("Please enter an event name");
+				return;
+			}
+			console.log("IN HERE")
+			await updateEvent();
+			setEventName("");
+			setCancleOrDelete('Cancel');
+			setUpdateOrAdd('Create');
+			hideModal();
+
+		}
+
 	}
 	return (
 		<PaperProvider>
@@ -138,7 +247,7 @@ const EventManager = (props) => {
 							</Text>
 						</View>
 					</View>
-					<QrCreator />
+					<QrCreator id={generateQrData} />
 					<View style={styles.modalFooter}>
 						<TouchableOpacity
 							style={[styles.button, styles.cancelButton]}
@@ -147,78 +256,103 @@ const EventManager = (props) => {
 							<Text style={styles.buttonText}>Cancel</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
-							onPress={addEvent}
+							onPress={() => addOrUpdateEvent(updateOrCreate)}
 							style={[styles.button, styles.createButton]}
 						>
-							<Text style={styles.buttonText}>Create</Text>
+							<Text style={styles.buttonText}>{updateOrCreate}</Text>
 						</TouchableOpacity>
 					</View>
 				</Modal>
 			</Portal>
+
 			<View style={{ flex: 1, backgroundColor: "black" }}>
 				<Header showModal={showModal} />
 
 				<ScrollView>
 					<View style={styles.container}>
-						{events.map((event) => {
-							return (
-								<>
-									<TouchableOpacity
-										id={event.id}
-										style={styles.eventButton}
-										onPress={() => {
-											console.log("YIPEE");
-										}}
-									>
-										<View style={styles.eventButtonContent}>
-											{/* Left Icon */}
-											<Icon
-												name="qrcode"
-												size={30}
-												color="black"
-											/>
-
+						{events.length === 0 && (
+							<Text style={{ color: "white", fontSize: 20 }}>
+								No events found
+							</Text>
+						)}
+						{events &&
+							events.map((event) => {
+								return (
+									<>
+										<TouchableOpacity
+											id={event.id}
+											key={event.id}
+											style={styles.eventButton}
+											onLongPress={() => handleLongPress(event)}
+											onPress={() => {
+												router.push({
+													pathname: "/storefront/customer",
+													params: { qr_reference: event.cart_id },
+												});
+											}}
+										>
 											<View
-												style={{
-													flexDirection: "column",
-													alignItems: "flex-start",
-													justifyContent:
-														"flex-start",
-													width: "50%",
-												}}
+												style={
+													styles.eventButtonContent
+												}
 											>
-												<Text style={styles.buttonText}>
-													{event.name}
-												</Text>
+												{/* Left Icon */}
+												<Icon
+													name="qrcode"
+													size={30}
+													color="black"
+												/>
 
-												<Text
+												<View
 													style={{
-														color: "black",
-														fontSize: 15,
+														flexDirection: "column",
+														alignItems:
+															"flex-start",
+														justifyContent:
+															"flex-start",
+														width: "50%",
 													}}
 												>
-													Created:{" "}
-													{new Date(
-														event.created_at
-													).toLocaleTimeString([], {
-														hour: "2-digit",
-														minute: "2-digit",
-														hour12: true,
-													})}
-												</Text>
-											</View>
+													<Text
+														style={
+															styles.buttonText
+														}
+													>
+														{event.name}
+													</Text>
 
-											{/* Right Icon */}
-											<Icon
-												name="arrow-right-bold"
-												size={30}
-												color="black"
-											/>
-										</View>
-									</TouchableOpacity>
-								</>
-							);
-						})}
+													<Text
+														style={{
+															color: "black",
+															fontSize: 15,
+														}}
+													>
+														Created:{" "}
+														{new Date(
+															event.created_at
+														).toLocaleTimeString(
+															[],
+															{
+																hour: "2-digit",
+																minute:
+																	"2-digit",
+																hour12: true,
+															}
+														)}
+													</Text>
+												</View>
+
+												{/* Right Icon */}
+												<Icon
+													name="arrow-right-bold"
+													size={30}
+													color="black"
+												/>
+											</View>
+										</TouchableOpacity>
+									</>
+								);
+							})}
 					</View>
 				</ScrollView>
 			</View>
