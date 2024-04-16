@@ -81,7 +81,7 @@ export default function CustomerCartScreen() {
 			  console.error('Error updating testData:', error);
 			} else {
 			  // Navigate back after successful update
-			  router.back();
+			  router.push('/Complete-order');
 			}
 		  } else {
 			console.error('No user found');
@@ -210,9 +210,9 @@ console.log(ownedItemsCount)
 								backgroundColor: "#3f3f46",
 								opacity: 2
 							}}
-							onPress={() => session?.user?.id === item.owner ? removeFromCart(item.id) : handleSelect(item.id)}
+							onPress={() => role === 'Merchant' || session?.user?.id === item.owner ? removeFromCart(item.id) : handleSelect(item.id)}
 						>
-							{session?.user?.id === item.owner ? 'Remove from Cart' : 'Select'}
+							{ role === 'Merchant' || session?.user?.id === item.owner ? 'Remove from Cart' : 'Select'}
 						</Button>
 					</Card>
 					</View>
@@ -234,7 +234,7 @@ console.log(ownedItemsCount)
 						padding: 10,
 						borderRadius: 0,
 					}}
-					onPress={role === 'Customer' ? handlePress : () => {}}
+					onPress={role === 'Customer' && ownedItemsCount != 0 ? handlePress : () => {}}
 					icon={"cart"}
 				>
 					{ role === 'Customer' ? `Check Out (${ownedItemsCount})` : 'Awaiting Order' }
