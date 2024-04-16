@@ -1,4 +1,3 @@
-import { router } from "expo-router";
 import React, { useState } from "react";
 import { Alert, AppState, StyleSheet, Text, View } from "react-native";
 import { Button, Input } from "react-native-elements";
@@ -23,8 +22,8 @@ export default function Auth({ phone, setPhone, setSentCode }) {
 
 	async function signInWithPhone() {
 		// undo this
-		router.push("/ChoiceScreen");
-		return;
+		// router.push("/ChoiceScreen");
+		// return;
 		setLoading(true);
 		const { data, error } = await supabase.auth.signInWithOtp({
 			phone: `1${phone}`,
