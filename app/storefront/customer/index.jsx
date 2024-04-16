@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { ScrollView, View } from "react-native";
 import { Header } from "react-native-elements";
 import { Button, Card, Paragraph, Title } from "react-native-paper";
@@ -10,7 +10,7 @@ import { useLocalSearchParams } from "expo-router";
 
 import { useAuth } from "../../../hooks/useAuth";
 import { useSupabaseChannel } from "../../../hooks/useSupabaseChannel";
-
+import { RoleContext } from "../../../context/RoleContext";
 
 const randomUUID = () => {
 	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -54,7 +54,8 @@ const mockData = [
 ];
 
 export default function CustomerStoreFront() {
-
+	const { role } = useContext(RoleContext);
+	console.log("ROLE", role)
 	const { qr_reference } = useLocalSearchParams()
 
 	const [session, setSession] = useState(null);
@@ -123,6 +124,7 @@ export default function CustomerStoreFront() {
 	};
 
 	const handleAddToCart = async (item) => {
+		const { data: { user } } = await supabase.auth.getUser()
 		try {
 			// Fetch the existing testData from the database
 			const { data: getTest, error: errorTest } = await supabase
@@ -144,6 +146,15 @@ export default function CustomerStoreFront() {
 				imageUrl: 'http://placebacon.net/400/300?image=1',
 			};
 			item.id = randomUUID();
+
+			if (role === "Customer") {
+				item.owner = user.id;
+			}
+			else {
+				console.log("ADDING FROM MERCHANT")
+				item.owner = ""
+			}
+
 
 			// Combine the existing testData with the new item
 			const newData = [...getTest.testData, item];

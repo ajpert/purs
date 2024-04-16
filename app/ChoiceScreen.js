@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, StyleSheet, Image, Modal, Button } from 'react-native';
 import { router } from 'expo-router';
 
 import { useAuth } from '../hooks/useAuth';
 
-const ChoiceScreen = () => {
+import { RoleContext } from '../context/RoleContext';
 
+const ChoiceScreen = () => {
+    const { setRole } = useContext(RoleContext);
     const [modalVisible, setModalVisible] = useState(false);
 
     const handleSubmit = () => {
@@ -15,6 +17,7 @@ const ChoiceScreen = () => {
     };
 
     handleRoleSelection = (role) => {
+        setRole(role);
         console.log(role);
         if(role == 'Customer') {
             router.push('/scan')
