@@ -38,7 +38,7 @@ function Header(props) {
 					onPress={() => {
 						router.back();
 					}}
-					color={"#F24E1E"}
+					color={"white"}
 				/>
 			)}
 
@@ -48,7 +48,7 @@ function Header(props) {
 			/>
 			<Appbar.Action
 				icon="plus"
-				color={"#F24E1E"}
+				color={"white"}
 				onPress={() => {
 					props.showModal();
 				}}

@@ -1,9 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useNavigation, useRouter } from "expo-router";
 import React, { useState, useEffect, useContext } from "react";
 import { ScrollView, View } from "react-native";
 import { Header } from "react-native-elements";
-import { Button, Card, Paragraph, Title } from "react-native-paper";
+import { Button, Card, Paragraph, Title,Appbar } from "react-native-paper";
 
 import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams } from "expo-router";
@@ -11,6 +11,50 @@ import { useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../../hooks/useAuth";
 import { useSupabaseChannel } from "../../../hooks/useSupabaseChannel";
 import { RoleContext } from "../../../context/RoleContext";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+
+function HeaderComponent(props) {
+	const navigation = useNavigation();
+	const router = useRouter();
+	const [isNavigationReady, setIsNavigationReady] = useState(false);
+
+	useEffect(() => {
+		const unsubscribe = navigation.addListener("state", () => {
+			setIsNavigationReady(true);
+		});
+
+		return unsubscribe;
+	}, [navigation]);
+
+	return (
+		<Appbar.Header
+			statusBarHeight={30}
+			style={{ backgroundColor: "black" }}
+		>
+			{isNavigationReady && (
+				<Appbar.BackAction
+					onPress={() => {
+						router.back();
+					}}
+					color={"white"}
+				/>
+			)}
+
+			<Appbar.Content
+				title="Store Front"
+				titleStyle={{ color: "white", fontSize: 30 }}
+			/>
+			<Appbar.Action
+				icon="cog"
+				color={"white"}
+				onPress={() => {
+					props.showModal();
+				}}
+			/>
+		</Appbar.Header>
+	);
+}
+
 
 const randomUUID = () => {
 	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -183,21 +227,7 @@ export default function CustomerStoreFront() {
 
 	return (
 		<View style={{ flex: 1, backgroundColor: "#171717" }}>
-			<Header
-				leftComponent={<Button title="Back" style={{ backgroundColor: 'white' }} onPress={() => router.back()} />}
-				centerComponent={{
-					text: "Storefront",
-					style: {
-						color: "#fff",
-						fontSize: 32,
-						fontWeight: "bold",
-					},
-				}}
-
-				containerStyle={{
-					backgroundColor: "#171717",
-				}}
-			/>
+			<HeaderComponent/>
 
 			<ScrollView style={{ padding: 10 }}>
 				{mockData.map((item) => (
