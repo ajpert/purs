@@ -1,33 +1,99 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { router, useGlobalSearchParams, useLocalSearchParams,useFocusEffect } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
 import { Header } from "react-native-elements";
 import { Button, Card, Paragraph, Title } from "react-native-paper";
+import { supabase } from "../../../lib/supabase";
+import { useSupabaseChannel } from "../../../hooks/useSupabaseChannel";
+
 
 export default function CustomerCartScreen() {
+
+
+	const { qr_reference } = useLocalSearchParams();
 	const [cart, setCart] = useState([]);
 
-	const handlePress = () => {
-		router.push("/storefront/customer");
+
+	useFocusEffect(
+		React.useCallback(() => {
+			const fetchInitialData = async () => {
+				try {
+					const { data: getTest, error: errorTest } = await supabase
+						.from('test2')
+						.select('testData')
+						.eq('id', qr_reference)
+						.single();
+
+					if (errorTest) {
+						console.error('Error fetching initial testData:', errorTest);
+					} else {
+						setCart(getTest.testData);
+					}
+				} catch (error) {
+					console.error('Error fetching initial data:', error);
+				}
+			};
+
+			fetchInitialData();
+			const channel = supabase
+				.channel("table-filter-changes")
+				.on(
+					"postgres_changes",
+					{
+						event: "*",
+						schema: "public",
+						table: 'test2',
+						filter: `id=eq.${qr_reference}`,
+					},
+					(payload) => {
+						console.log(payload.new.testData);
+						setCart(payload.new.testData);
+					}
+				)
+				.subscribe();
+
+			return () => {
+				channel.unsubscribe();
+			}
+		}, [])
+	)
+
+	const handlePress = async () => {
+		const { error } = await supabase
+		.from('test2')
+		.update({ testData: [] })
+		.eq('id', qr_reference)
+		.select();
+
+		router.back();
 	};
 
-	const removeFromCart = (id) => {
-		setCart(cart.filter((item) => item.id !== id));
-	};
+	const removeFromCart = async (id) => {
+		try {
 
-	const getData = async () => {
-		const data = await AsyncStorage.getItem("cart");
-		if (data) {
-			setCart(JSON.parse(data));
-		} else {
-			Alert.alert("No items in cart");
+		  // Remove the item with the given id from the testData array
+		  const updatedData = cart.filter((item) => item.id !== id);
+	  
+		  // Update the testData in the database
+		  const { error } = await supabase
+			.from('test2')
+			.update({ testData: updatedData })
+			.eq('id', qr_reference)
+			.select();
+	  
+		  if (error) {
+			console.error('Error updating testData:', error);
+		  }
+		} catch (error) {
+		  console.error('Error removing item from cart:', error);
 		}
-	};
+	  };
 
-	useEffect(() => {
-		getData();
-	}, []);
+
+
+
+
 
 	return (
 		<View style={{ flex: 1, backgroundColor: "#171717" }}>
@@ -103,7 +169,7 @@ export default function CustomerCartScreen() {
 					onPress={handlePress}
 					icon={"cart"}
 				>
-					View Cart ({cart.length})
+					Check Out ({cart?.length})
 				</Button>
 			</Card>
 		</View>

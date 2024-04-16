@@ -41,12 +41,16 @@ export default function App() {
     console.log(data.data);
     try {
       const scannedData = JSON.parse(data.data);
-      if (scannedData.store_id === "1" && scannedData.qr_reference === "1") {
+      console.log(scannedData)
+      if (scannedData.store_id  && scannedData.qr_reference ) {
         setScanned(data);
         setInvalidQRCode(false);
 
         setIsCameraMounted(false);
-        router.push("/storefront/customer");
+        router.push({
+          pathname: "/storefront/customer",
+          params: { qr_reference: scannedData.qr_reference },
+        });
       } else {
         console.log("Invalid QR code format");
         setInvalidQRCode(true);
