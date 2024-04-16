@@ -45,6 +45,7 @@ const mockData = [
 ];
 
 export default function MerchantCartScreen() {
+
 	const handlePress = () => {
 		router.push("/storefront/customer");
 	};

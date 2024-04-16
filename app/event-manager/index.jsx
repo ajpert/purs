@@ -44,6 +44,8 @@ function Header(props) {
 
 
 
+
+
 const EventManager = (props) => {
     const [visible, setVisible] = React.useState(false);
     const [eventName, setEventName] = useState('');
@@ -52,13 +54,13 @@ const EventManager = (props) => {
 
     const [EventData, setEventData] = useState([
         {
-            "event-name": "table 1"
+            "event-name": "table 1", "qr_reference": "14b01cca-bf5e-4132-9e04-58538e10d45c"
         },
         {
-            "event-name": "table 2"
+            "event-name": "table 2", "qr_reference": "27f3ed69-cccd-4bee-af7c-e10459492d36"
         },
         {
-            "event-name": "table 3"
+            "event-name": "table 3", "qr_reference": "5c0828ff-71ff-4f68-839d-bb40f74789c7"
         },
     ])
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -69,7 +71,7 @@ const EventManager = (props) => {
             alert('Please enter an event name');
             return;
         }
-    
+
         setEventData([...EventData, { "event-name": eventName.trim() }]);
         setEventName('');
         hideModal();
@@ -123,7 +125,12 @@ const EventManager = (props) => {
                         {
                             EventData.map((event) => {
                                 return (<>
-                                    <TouchableOpacity style={styles.eventButton} onPress={() => { console.log("YIPEE") }}>
+                                    <TouchableOpacity style={styles.eventButton} onPress={() => {
+                                        router.push({
+                                            pathname: "/storefront/customer",
+                                            params: { qr_reference: event.qr_reference },
+                                        })
+                                    }}>
                                         <View style={styles.eventButtonContent}>
                                             {/* Left Icon */}
                                             <Icon name="qrcode" size={30} color="black" />

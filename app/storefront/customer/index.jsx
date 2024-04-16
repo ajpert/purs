@@ -1,15 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import React, { useState, useEffect } from "react";
 import { ScrollView, View } from "react-native";
 import { Header } from "react-native-elements";
 import { Button, Card, Paragraph, Title } from "react-native-paper";
 
 import { supabase } from "../../../lib/supabase";
-
+import { useLocalSearchParams } from "expo-router";
 
 import { useAuth } from "../../../hooks/useAuth";
-
+import { useSupabaseChannel } from "../../../hooks/useSupabaseChannel";
 
 
 const randomUUID = () => {
@@ -54,43 +54,125 @@ const mockData = [
 ];
 
 export default function CustomerStoreFront() {
+
+	const { qr_reference } = useLocalSearchParams()
+
 	const [session, setSession] = useState(null);
 
 	const [data, setData] = useState(null);
-	useEffect(() => {
 
-		async function f() {
-			const {data, error} = await supabase.from('test').select('*')
-
-
-
-			setData(data)
-		}
-		f()
-	}, [])
 	const [cart, setCart] = useState([]);
-	console.log(data)
+
+	const temp = useSupabaseChannel("test2", qr_reference)
+
+	console.log("TEMP", temp.length)
+
+
+	useFocusEffect(
+		React.useCallback(() => {
+			const fetchInitialData = async () => {
+				try {
+					const { data: getTest, error: errorTest } = await supabase
+						.from('test2')
+						.select('testData')
+						.eq('id', qr_reference)
+						.single();
+
+					if (errorTest) {
+						console.error('Error fetching initial testData:', errorTest);
+					} else {
+						setCart(getTest.testData);
+					}
+				} catch (error) {
+					console.error('Error fetching initial data:', error);
+				}
+			};
+
+			fetchInitialData();
+			const channel = supabase
+				.channel("table-filter-changes")
+				.on(
+					"postgres_changes",
+					{
+						event: "*",
+						schema: "public",
+						table: 'test2',
+						filter: `id=eq.${qr_reference}`,
+					},
+					(payload) => {
+
+						setCart(payload.new.testData);
+					}
+				)
+				.subscribe();
+
+			return () => {
+				channel.unsubscribe();
+			}
+		}, [])
+	)
+
 
 	const handlePress = async () => {
 		await AsyncStorage.setItem("cart", JSON.stringify(cart));
-		router.push("/cart/customer");
+		router.push({
+			pathname: "/cart/customer",
+			params: { qr_reference: qr_reference },
+		});
+
 	};
 
 	const handleAddToCart = async () => {
-		setCart([
-			...cart,
-			{
+		try {
+			// Fetch the existing testData from the database
+			const { data: getTest, error: errorTest } = await supabase
+				.from('test2')
+				.select('testData')
+				.eq('id', qr_reference)
+				.single();
+
+			if (errorTest) {
+				console.error('Error fetching testData:', errorTest);
+				return;
+			}
+
+			// Create a new item to be added
+			const newItem = {
 				id: randomUUID(),
-				name: "Bacon",
-				description: "The best bacon in town.",
-				imageUrl: "http://placebacon.net/400/300?image=1",
-			},
-		]);
+				name: 'Bacon',
+				description: 'The best bacon in town.',
+				imageUrl: 'http://placebacon.net/400/300?image=1',
+			};
+
+			// Combine the existing testData with the new item
+			const newData = [...getTest.testData, newItem];
+
+			// Update the testData in the database
+			const { data, error } = await supabase
+				.from('test2')
+				.update({ testData: newData })
+				.eq('id', qr_reference)
+				.select();
+
+			if (error) {
+				console.error('Error updating testData:', error);
+				return;
+			}
+
+
+
+			// Update the local cart state
+
+		} catch (error) {
+			console.error('Error handling AddToCart:', error);
+		}
+
 	};
 
 	return (
 		<View style={{ flex: 1, backgroundColor: "#171717" }}>
 			<Header
+				leftComponent={<Button title="Back" style={{ backgroundColor: 'white' }} onPress={() => router.back()} />}
 				centerComponent={{
 					text: "Storefront",
 					style: {
@@ -99,6 +181,7 @@ export default function CustomerStoreFront() {
 						fontWeight: "bold",
 					},
 				}}
+
 				containerStyle={{
 					backgroundColor: "#171717",
 				}}
@@ -167,7 +250,7 @@ export default function CustomerStoreFront() {
 					onPress={handlePress}
 					icon={"cart"}
 				>
-					View Cart ({cart.length})
+					View Cart ({cart?.length})
 				</Button>
 			</Card>
 		</View>
