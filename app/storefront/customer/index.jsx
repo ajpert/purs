@@ -143,6 +143,7 @@ export default function CustomerStoreFront() {
 				description: 'The best bacon in town.',
 				imageUrl: 'http://placebacon.net/400/300?image=1',
 			};
+			item.id = randomUUID();
 
 			// Combine the existing testData with the new item
 			const newData = [...getTest.testData, item];
