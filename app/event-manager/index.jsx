@@ -1,4 +1,4 @@
-import { useNavigation, useRouter } from "expo-router";
+import { router, useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ScrollView,
@@ -56,22 +56,63 @@ function Header(props) {
 		</Appbar.Header>
 	);
 }
+const randomUUID = () => {
+	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+		const r = (Math.random() * 16) | 0;
+		const v = c === "x" ? r : (r & 0x3) | 0x8;
+		return v.toString(16);
+	});
+};
 
 const EventManager = (props) => {
 	const [visible, setVisible] = React.useState(false);
 	const [eventName, setEventName] = useState("");
-	const showModal = () => setVisible(true);
-	const hideModal = () => setVisible(false);
+	const showModal = () => { 
+		setCancleOrDelete('Cancle'); 
+		setUpdateOrAdd('Create');
+		setEventName(""); 
+		setGenerateQrData(randomUUID()); 
+		setVisible(true) };
+
+	const hideModal = () => {
+
+		setVisible(false)
+		
+	};
 	const [events, setEvents] = useState([]);
+
+	const [currentEventId, setCurrentEventId] = useState(null);
 	const { session, profile } = useAuth();
+	const [generateQrData, setGenerateQrData] = useState(null);
+
+
+	const [cancelOrDelete, setCancleOrDelete] = useState('Cancel');
+	const [updateOrCreate, setUpdateOrAdd] = useState('Create');
 
 	const addNewEvent = async () => {
+		console.log(generateQrData)
+		const { data: { user } } = await supabase.auth.getUser()
 		try {
-			console.log("session", session?.user?.id);
+			const { data: qrData, error: qrError } = await supabase.
+				from('test2')
+				.insert([
+					{
+						testData: [],
+						qr_id: generateQrData
+					}
+				])
+				.select()
+
+			console.log(qrData, qrError)
+
+
+			console.log("session", user.id);
 			const { data, error } = await supabase
 				.from("events")
-				.insert({ name: eventName, phone_number: "12392855148" })
-				.eq("merchant_id", session?.user?.id);
+				.insert({ name: eventName, phone_number: "12392855148", cart_id: generateQrData })
+				.eq("merchant_id", user.id);
+			getEvents();
+			console.log(data)
 			if (error) {
 				throw error;
 			}
@@ -80,12 +121,47 @@ const EventManager = (props) => {
 		}
 	};
 
+	const updateEvent = async () => {
+		const { data: { user } } = await supabase.auth.getUser()
+		try {
+			const { data, error } = await supabase
+				.from("events")
+				.update({ name: eventName })
+				.eq("id", currentEventId)
+				.select();
+			if (error) {
+				console.log("Error updating event:", error);
+				// Display an error message to the user if needed
+			  }		  
+			console.log("UPDATE", data)
+			await getEvents();
+			if (error) {
+				throw error;
+			}
+		} catch (error) {
+			console.log("Error", error);
+		}
+
+	}
+
+	function handleLongPress(event) {
+		setCancleOrDelete('Delete');
+		setUpdateOrAdd('Update');
+		setGenerateQrData(event.cart_id);
+		setEventName(event.name);
+		setVisible(true);
+		setCurrentEventId(event.id);
+		console.log(event)
+
+	}
+
 	const getEvents = async () => {
+		const { data: { user } } = await supabase.auth.getUser()
 		try {
 			const { data, error } = await supabase
 				.from("events")
 				.select("*")
-				.eq("merchant_id", session?.user?.id);
+				.eq("merchant_id", user.id);
 
 			if (error) {
 				throw error;
@@ -96,27 +172,47 @@ const EventManager = (props) => {
 		}
 	};
 
-	useEffect(() => {
-		(async () => {
-			await getEvents();
-		})();
-	}, [events]);
-
+	/*
+		useEffect(() => {
+			(async () => {
+				await getEvents();
+			})();
+		}, [events]);
+	*/
 	useEffect(() => {
 		(async () => {
 			await getEvents();
 		})();
 	}, []);
 
-	async function addEvent() {
-		if (eventName.trim() === "") {
-			// Show a warning or alert if the input is empty or contains only whitespace
-			alert("Please enter an event name");
-			return;
+
+
+	async function addOrUpdateEvent(type) {
+		if (type === "Create") {
+			if (eventName.trim() === "") {
+				// Show a warning or alert if the input is empty or contains only whitespace
+				alert("Please enter an event name");
+				return;
+			}
+			await addNewEvent();
+			setEventName("");
+			hideModal();
 		}
-		await addNewEvent();
-		setEventName("");
-		hideModal();
+		if (type === "Update") {
+			if (eventName.trim() === "") {
+				// Show a warning or alert if the input is empty or contains only whitespace
+				alert("Please enter an event name");
+				return;
+			}
+			console.log("IN HERE")
+			await updateEvent();
+			setEventName("");
+			setCancleOrDelete('Cancel');
+			setUpdateOrAdd('Create');
+			hideModal();
+
+		}
+
 	}
 	return (
 		<PaperProvider>
@@ -151,7 +247,7 @@ const EventManager = (props) => {
 							</Text>
 						</View>
 					</View>
-					<QrCreator />
+					<QrCreator id={generateQrData} />
 					<View style={styles.modalFooter}>
 						<TouchableOpacity
 							style={[styles.button, styles.cancelButton]}
@@ -160,14 +256,15 @@ const EventManager = (props) => {
 							<Text style={styles.buttonText}>Cancel</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
-							onPress={addEvent}
+							onPress={() => addOrUpdateEvent(updateOrCreate)}
 							style={[styles.button, styles.createButton]}
 						>
-							<Text style={styles.buttonText}>Create</Text>
+							<Text style={styles.buttonText}>{updateOrCreate}</Text>
 						</TouchableOpacity>
 					</View>
 				</Modal>
 			</Portal>
+
 			<View style={{ flex: 1, backgroundColor: "black" }}>
 				<Header showModal={showModal} />
 
@@ -186,8 +283,12 @@ const EventManager = (props) => {
 											id={event.id}
 											key={event.id}
 											style={styles.eventButton}
+											onLongPress={() => handleLongPress(event)}
 											onPress={() => {
-												console.log("YIPEE");
+												router.push({
+													pathname: "/storefront/customer",
+													params: { qr_reference: event.cart_id },
+												});
 											}}
 										>
 											<View

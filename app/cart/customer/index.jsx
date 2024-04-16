@@ -22,16 +22,16 @@ export default function CustomerCartScreen() {
 					const { data: getTest, error: errorTest } = await supabase
 						.from('test2')
 						.select('testData')
-						.eq('id', qr_reference)
+						.eq('qr_id', qr_reference)
 						.single();
 
 					if (errorTest) {
-						console.error('Error fetching initial testData:', errorTest);
+						console.error('Error fetching initial testData1:', errorTest);
 					} else {
 						setCart(getTest.testData);
 					}
 				} catch (error) {
-					console.error('Error fetching initial data:', error);
+					console.error('Error fetching initial data2:', error);
 				}
 			};
 
@@ -44,7 +44,7 @@ export default function CustomerCartScreen() {
 						event: "*",
 						schema: "public",
 						table: 'test2',
-						filter: `id=eq.${qr_reference}`,
+						filter: `qr_id=eq.${qr_reference}`,
 					},
 					(payload) => {
 						console.log(payload.new.testData);
@@ -63,7 +63,7 @@ export default function CustomerCartScreen() {
 		const { error } = await supabase
 		.from('test2')
 		.update({ testData: [] })
-		.eq('id', qr_reference)
+		.eq('qr_id', qr_reference)
 		.select();
 
 		router.back();
@@ -79,7 +79,7 @@ export default function CustomerCartScreen() {
 		  const { error } = await supabase
 			.from('test2')
 			.update({ testData: updatedData })
-			.eq('id', qr_reference)
+			.eq('qr_id', qr_reference)
 			.select();
 	  
 		  if (error) {

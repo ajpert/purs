@@ -31,25 +31,25 @@ const mockData = [
 		id: randomUUID(),
 		name: "Bacon",
 		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=1",
+		imageUrl: "http://placebacon.net/400/300?image=2",
 	},
 	{
 		id: randomUUID(),
 		name: "Bacon",
 		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=1",
+		imageUrl: "http://placebacon.net/400/300?image=3",
 	},
 	{
 		id: randomUUID(),
 		name: "Bacon",
 		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=1",
+		imageUrl: "http://placebacon.net/400/300?image=4",
 	},
 	{
 		id: randomUUID(),
 		name: "Bacon",
 		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=1",
+		imageUrl: "http://placebacon.net/400/300?image=5",
 	},
 ];
 
@@ -63,9 +63,9 @@ export default function CustomerStoreFront() {
 
 	const [cart, setCart] = useState([]);
 
-	const temp = useSupabaseChannel("test2", qr_reference)
+	//const temp = useSupabaseChannel("test2", qr_reference)
 
-	console.log("TEMP", temp.length)
+	//console.log("TEMP", temp.length)
 
 
 	useFocusEffect(
@@ -75,16 +75,16 @@ export default function CustomerStoreFront() {
 					const { data: getTest, error: errorTest } = await supabase
 						.from('test2')
 						.select('testData')
-						.eq('id', qr_reference)
+						.eq('qr_id', qr_reference)
 						.single();
 
 					if (errorTest) {
-						console.error('Error fetching initial testData:', errorTest);
+						console.error('Error fetching initial testData3:', errorTest);
 					} else {
 						setCart(getTest.testData);
 					}
 				} catch (error) {
-					console.error('Error fetching initial data:', error);
+					console.error('Error fetching initial data4:', error);
 				}
 			};
 
@@ -97,7 +97,7 @@ export default function CustomerStoreFront() {
 						event: "*",
 						schema: "public",
 						table: 'test2',
-						filter: `id=eq.${qr_reference}`,
+						filter: `qr_id=eq.${qr_reference}`,
 					},
 					(payload) => {
 
@@ -122,17 +122,17 @@ export default function CustomerStoreFront() {
 
 	};
 
-	const handleAddToCart = async () => {
+	const handleAddToCart = async (item) => {
 		try {
 			// Fetch the existing testData from the database
 			const { data: getTest, error: errorTest } = await supabase
 				.from('test2')
 				.select('testData')
-				.eq('id', qr_reference)
+				.eq('qr_id', qr_reference)
 				.single();
 
 			if (errorTest) {
-				console.error('Error fetching testData:', errorTest);
+				console.error('Error fetching testData5:', errorTest);
 				return;
 			}
 
@@ -145,13 +145,13 @@ export default function CustomerStoreFront() {
 			};
 
 			// Combine the existing testData with the new item
-			const newData = [...getTest.testData, newItem];
+			const newData = [...getTest.testData, item];
 
 			// Update the testData in the database
 			const { data, error } = await supabase
 				.from('test2')
 				.update({ testData: newData })
-				.eq('id', qr_reference)
+				.eq('qr_id', qr_reference)
 				.select();
 
 			if (error) {
@@ -225,7 +225,7 @@ export default function CustomerStoreFront() {
 								borderRadius: 10,
 								backgroundColor: "#3f3f46",
 							}}
-							onPress={handleAddToCart}
+							onPress={() => handleAddToCart(item)}
 						>
 							Add to Cart
 						</Button>
