@@ -13,6 +13,7 @@ import QrCreator from "../../components/QrCreator";
 import { supabase } from "../../lib/supabase";
 
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import useAuth from "../../hooks/useAuth";
 
 function Header(props) {
 	const navigation = useNavigation();
@@ -62,16 +63,18 @@ const EventManager = (props) => {
 	const showModal = () => setVisible(true);
 	const hideModal = () => setVisible(false);
 	const [events, setEvents] = useState([]);
+	const { session, profile } = useAuth();
 
 	const addNewEvent = async () => {
 		try {
+			console.log("session", session?.user?.id);
 			const { data, error } = await supabase
 				.from("events")
-				.insert({ name: eventName, phone_number: phoneNumber });
+				.insert({ name: eventName, phone_number: "12392855148" })
+				.eq("merchant_id", session?.user?.id);
 			if (error) {
-				console.log("Error", error);
+				throw error;
 			}
-			console.log(data);
 		} catch (error) {
 			console.log("Error", error);
 		}
@@ -79,9 +82,13 @@ const EventManager = (props) => {
 
 	const getEvents = async () => {
 		try {
-			const { data, error } = await supabase.from("events").select("*");
+			const { data, error } = await supabase
+				.from("events")
+				.select("*")
+				.eq("merchant_id", session?.user?.id);
+
 			if (error) {
-				console.log("Error", error);
+				throw error;
 			}
 			setEvents(data);
 		} catch (error) {
@@ -90,10 +97,16 @@ const EventManager = (props) => {
 	};
 
 	useEffect(() => {
-		getEvents();
+		(async () => {
+			await getEvents();
+		})();
 	}, [events]);
 
-	const [phoneNumber, setPhoneNumber] = useState("");
+	useEffect(() => {
+		(async () => {
+			await getEvents();
+		})();
+	}, []);
 
 	async function addEvent() {
 		if (eventName.trim() === "") {
@@ -160,65 +173,85 @@ const EventManager = (props) => {
 
 				<ScrollView>
 					<View style={styles.container}>
-						{events.map((event) => {
-							return (
-								<>
-									<TouchableOpacity
-										id={event.id}
-										style={styles.eventButton}
-										onPress={() => {
-											console.log("YIPEE");
-										}}
-									>
-										<View style={styles.eventButtonContent}>
-											{/* Left Icon */}
-											<Icon
-												name="qrcode"
-												size={30}
-												color="black"
-											/>
-
+						{events.length === 0 && (
+							<Text style={{ color: "white", fontSize: 20 }}>
+								No events found
+							</Text>
+						)}
+						{events &&
+							events.map((event) => {
+								return (
+									<>
+										<TouchableOpacity
+											id={event.id}
+											key={event.id}
+											style={styles.eventButton}
+											onPress={() => {
+												console.log("YIPEE");
+											}}
+										>
 											<View
-												style={{
-													flexDirection: "column",
-													alignItems: "flex-start",
-													justifyContent:
-														"flex-start",
-													width: "50%",
-												}}
+												style={
+													styles.eventButtonContent
+												}
 											>
-												<Text style={styles.buttonText}>
-													{event.name}
-												</Text>
+												{/* Left Icon */}
+												<Icon
+													name="qrcode"
+													size={30}
+													color="black"
+												/>
 
-												<Text
+												<View
 													style={{
-														color: "black",
-														fontSize: 15,
+														flexDirection: "column",
+														alignItems:
+															"flex-start",
+														justifyContent:
+															"flex-start",
+														width: "50%",
 													}}
 												>
-													Created:{" "}
-													{new Date(
-														event.created_at
-													).toLocaleTimeString([], {
-														hour: "2-digit",
-														minute: "2-digit",
-														hour12: true,
-													})}
-												</Text>
-											</View>
+													<Text
+														style={
+															styles.buttonText
+														}
+													>
+														{event.name}
+													</Text>
 
-											{/* Right Icon */}
-											<Icon
-												name="arrow-right-bold"
-												size={30}
-												color="black"
-											/>
-										</View>
-									</TouchableOpacity>
-								</>
-							);
-						})}
+													<Text
+														style={{
+															color: "black",
+															fontSize: 15,
+														}}
+													>
+														Created:{" "}
+														{new Date(
+															event.created_at
+														).toLocaleTimeString(
+															[],
+															{
+																hour: "2-digit",
+																minute:
+																	"2-digit",
+																hour12: true,
+															}
+														)}
+													</Text>
+												</View>
+
+												{/* Right Icon */}
+												<Icon
+													name="arrow-right-bold"
+													size={30}
+													color="black"
+												/>
+											</View>
+										</TouchableOpacity>
+									</>
+								);
+							})}
 					</View>
 				</ScrollView>
 			</View>
