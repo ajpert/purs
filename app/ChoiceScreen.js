@@ -1,16 +1,34 @@
 import { router } from "expo-router";
 import React, { useContext, useState } from "react";
-import {
-  Button,
-  Image,
-  Modal,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import "../globals.css";
+import { Image, Modal, Text, TouchableOpacity, View } from "react-native";
+import { IconButton, TextInput } from "react-native-paper";
+import { cn } from "../lib/utils";
+
+const data = [
+  {
+    role: "Merchant",
+    description: "You're the one selling the goods",
+    icon: require("../assets/merchant-1.png"),
+  },
+  {
+    role: "Customer",
+    description: "You're the one buying the goods",
+    icon: require("../assets/customer.png"),
+  },
+  {
+    role: "Bank",
+    description: "You're the one managing the money",
+    icon: require("../assets/bank.png"),
+  },
+];
+
+const logos = {
+  Merchant: require("../assets/merchant-1.png"),
+  Customer: require("../assets/customer.png"),
+  Bank: require("../assets/bank.png"),
+  Edit: require("../assets/edit.png"),
+  Arrow: require("../assets/arrow-1.png"),
+};
 
 import { RoleContext } from "../context/RoleContext";
 
@@ -23,7 +41,7 @@ const ChoiceScreen = () => {
     console.log("Phone Number:", phoneNumber);
   };
 
-  handleRoleSelection = (role) => {
+  const handleRoleSelection = (role) => {
     setRole(role);
     console.log(role);
     if (role == "Customer") {
@@ -34,61 +52,57 @@ const ChoiceScreen = () => {
       router.push("/event-manager");
     }
   };
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Let's Figure You Out 👋</Text>
-      <View style={styles.textContainer}>
-        <Text style={styles.normalText}>Are you a customer or a Merchant?</Text>
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.buttonBank]}
-          onPress={() => handleRoleSelection("Bank")}
-        >
-          <Image
-            style={styles.buttonLogo}
-            source={require("../assets/bank.png")}
-          />
-          <Text style={styles.buttonText}>Connect to Bank</Text>
-          <Image
-            style={styles.buttonEdit}
-            source={require("../assets/edit.png")}
-          />
-          <BankConnectionModal
-            visible={modalVisible}
-            onClose={() => setModalVisible(false)}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.buttonCustomer]}
-          onPress={() => handleRoleSelection("Customer")}
-        >
-          <Image
-            style={styles.buttonLogo}
-            source={require("../assets/customer.png")}
-          />
-          <Text className="text-3xl">Customer</Text>
 
-          <Image
-            style={styles.buttonArrow}
-            source={require("../assets/arrow-1.png")}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.buttonMerchant]}
-          onPress={() => handleRoleSelection("Merchant")}
-        >
-          <Image
-            style={styles.buttonLogo}
-            source={require("../assets/merchant-1.png")}
-          />
-          <Text style={styles.buttonText}>Merchant</Text>
-          <Image
-            style={styles.buttonArrow}
-            source={require("../assets/arrow-1.png")}
-          />
-        </TouchableOpacity>
+  return (
+    <View className="flex flex-col items-center h-full my-8">
+      <View className="self-stretch ml-8 mr-8 mt-6">
+        <Text className="text-white text-5xl text-left mx-auto">
+          What team suits you?
+        </Text>
       </View>
+
+      <View className="flex flex-col items-center mt-8">
+        {data.map((item) => (
+          <TouchableOpacity
+            key={item.role}
+            className={cn(
+              `flex flex-row justify-between items-center mb-4 w-96 h-24 rounded-3xl`,
+              {
+                "bg-orange-400": item.role === "Merchant",
+                "bg-green-400": item.role === "Customer",
+                "bg-blue-400": item.role === "Bank",
+              }
+            )}
+            onPress={() => handleRoleSelection(item.role)}
+          >
+            <Image
+              source={item.icon}
+              className="w-12 h-12 ml-4 mr-2 flex-1 lg:hidden" //holy hack "flex-1"
+            />
+            <View className="flex flex-col ml-2 w-4/6 lg:mx-auto">
+              <Text className="text-2xl lg:text-center font-medium">
+                {item.role}
+              </Text>
+              <Text className="text-sm font-light lg:text-center">
+                {item.description}
+              </Text>
+            </View>
+            <View className="flex-1 flex flex-row w-min lg:hidden">
+              <Image
+                source={logos.Arrow}
+                className="w-10 h-10 flex-grow-0 lg:flex-1"
+              />
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <BankConnectionModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
+      <Text className="text-white text-2xl text-center mt-8">
+        This helps us give you the best experience on Polaris.
+      </Text>
     </View>
   );
 };
@@ -104,132 +118,40 @@ const BankConnectionModal = ({ visible, onClose }) => {
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
+      <View className="flex-1 justify-center items-center">
+        <View className="flex flex-col gap-2 bg-white p-8 rounded-lg">
+          <Text className="text-lg">
+            Connect your banking account to Polaris
+          </Text>
           <TextInput
-            style={styles.input}
             onChangeText={setAccountNumber}
             value={accountNumber}
             placeholder="Account Number"
           />
           <TextInput
-            style={styles.input}
             onChangeText={setRoutingNumber}
             value={routingNumber}
             placeholder="Routing Number"
           />
           <TextInput
-            style={styles.input}
             onChangeText={setAccountHolderName}
             value={accountHolderName}
             placeholder="Account Holder Name"
           />
-          <Button title="Submit" onPress={onClose} />
+          <View className="flex flex-row justify-between">
+            <View className="flex flex-row items-center">
+              <IconButton icon="check" mode="outlined" onPress={onClose} />
+              <Text>Connect</Text>
+            </View>
+            <View className="flex flex-row items-center">
+              <IconButton icon="close" mode="outlined" onPress={onClose} />
+              <Text>Cancel</Text>
+            </View>
+          </View>
         </View>
       </View>
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "flex-start", // Align children to the top
-    alignItems: "center",
-    backgroundColor: "black",
-  },
-  text: {
-    marginTop: 100,
-    fontSize: 35,
-    color: "#fff", // White text color
-  },
-  textContainer: {
-    alignSelf: "stretch",
-    marginLeft: 30,
-    marginRight: 20,
-    marginTop: 20,
-  },
-  normalText: {
-    fontSize: 18,
-    color: "#fff",
-    textAlign: "left",
-    marginLeft: 10,
-  },
-  buttonContainer: {
-    flexDirection: "column",
-
-    marginTop: 50,
-    width: "100%",
-  },
-  button: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 20,
-    alignItems: "center",
-    borderRadius: 40,
-    marginLeft: 40,
-    width: "80%",
-    height: 100,
-  },
-  buttonCustomer: {
-    backgroundColor: "#FFC94A",
-  },
-  buttonMerchant: {
-    backgroundColor: "#5BBCFF",
-  },
-  buttonBank: {
-    backgroundColor: "#fff",
-  },
-  buttonText: {
-    fontSize: 25,
-    color: "#fff",
-    textAlign: "center",
-    color: "black",
-  },
-  buttonLogo: {
-    width: 40,
-    height: 40,
-    marginLeft: 30,
-    marginRight: 10,
-  },
-  buttonArrow: {
-    width: 40,
-    height: 40,
-    marginLeft: 10,
-  },
-  buttonEdit: {
-    width: 40,
-    height: 40,
-    marginLeft: 10,
-  },
-  centeredView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 22,
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-    width: 200,
-  },
-});
 
 export default ChoiceScreen;
