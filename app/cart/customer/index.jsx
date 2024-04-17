@@ -159,7 +159,6 @@ console.log(ownItems)
 
 
 	  const ownedItemsCount = cart.filter((item) => item.owner === session?.user?.id).length;
-console.log(ownedItemsCount)
 
 
 	return (
@@ -175,8 +174,7 @@ console.log(ownedItemsCount)
 			<ScrollView style={{ padding: 10, marginTop: 32 }}>
 				{cart.map((item) => (
 					<View style={{ 
-						filter: 'grayscale(100%)', 
-						'-webkit-filter':'grayscale(100%)', 
+
 						
 					}}>
 					<Card

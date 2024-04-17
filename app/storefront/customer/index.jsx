@@ -120,7 +120,7 @@ export default function CustomerStoreFront() {
 	const onToggleSwitch = async () => { 
 		await fetchData(); 
 		setIsSwitchOn(!isSwitchOn)
-	};
+	}
 
 	//const temp = useSupabaseChannel("test2", qr_reference)
 
