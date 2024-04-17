@@ -185,6 +185,7 @@ const MoneyCard = ({ handleAddToCart }) => {
 			<TextInput
 				style={styles.input}
 				placeholder="Enter amount"
+				placeholderTextColor={'gray'}
 				keyboardType="numeric"
 				value={amount.toString()}
 				onChangeText={handleAmountChange}
@@ -193,6 +194,7 @@ const MoneyCard = ({ handleAddToCart }) => {
 				style={styles.input}
 				placeholder="Enter memo (optional)"
 				value={memo}
+				placeholderTextColor={'gray'}
 				onChangeText={handleMemoChange}
 			/>
 			<Button
@@ -570,6 +572,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 12,
 		paddingVertical: 8,
 		marginBottom: 16,
+		color: "black",
 	},
 	optionsContainer: {
 		backgroundColor: "#f0f0f0",
