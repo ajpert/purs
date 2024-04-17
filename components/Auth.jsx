@@ -52,7 +52,7 @@ export default function Auth({ phone, setPhone, setSentCode }) {
 					onChangeText={setPhone}
 				/>
 			</View>
-			<View style={[styles.verticallySpaced, styles.mt20, { marginTop: 0, justifyContent: 'center', marginBottom: 400}]}>
+			<View style={[styles.verticallySpaced, styles.mt20, { marginTop: 0, justifyContent: 'center', marginBottom: 320}]}>
     <Button
         title="Sign In"
         onPress={signInWithPhone}
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
 		alignSelf: "stretch",
 	},
 	mt20: {
-		marginTop: 260,
+		marginTop: 340,
 	},
 	header: {
 		fontSize: 35,

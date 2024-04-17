@@ -11,6 +11,5 @@ export default function Index() {
     <PaperProvider>
       <App />
     </PaperProvider>
-
   );
 }
