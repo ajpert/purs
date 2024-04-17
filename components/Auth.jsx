@@ -41,20 +41,24 @@ export default function Auth({ phone, setPhone, setSentCode }) {
 			<Text style={styles.header}>Welcome to Polaris</Text>
 			<View style={[styles.verticallySpaced, styles.mt20]}>
 				<Input
-					label="phone"
-					leftIcon={{ type: "font-awesome", name: "phone" }}
+					label="Phone Number 🤳"
+					labelStyle={{ color: "white", fontSize: 26}}
+					placeholder="Enter your phone number"
+					placeholderTextColor="grey"
+					inputStyle={{ color: "white", fontSize:16}}
+					leftIcon={{ type: "font-awesome", name: "phone", color: "white"}}
 					value={phone}
 					keyboardType="phone-pad"
 					onChangeText={setPhone}
 				/>
 			</View>
-			<View style={[styles.verticallySpaced, styles.mt20]}>
-				<Button
-					title="Sign In"
-					onPress={signInWithPhone}
-					disabled={loading}
-				/>
-			</View>
+			<View style={[styles.verticallySpaced, styles.mt20, { marginTop: 0, justifyContent: 'center', marginBottom: 320}]}>
+    <Button
+        title="Sign In"
+        onPress={signInWithPhone}
+        disabled={loading}
+    />
+</View>
 		</View>
 	);
 }
@@ -63,6 +67,7 @@ const styles = StyleSheet.create({
 	container: {
 		marginTop: 40,
 		padding: 12,
+		backgroundColor: "black",
 	},
 	verticallySpaced: {
 		paddingTop: 4,
@@ -70,12 +75,13 @@ const styles = StyleSheet.create({
 		alignSelf: "stretch",
 	},
 	mt20: {
-		marginTop: 20,
+		marginTop: 340,
 	},
 	header: {
-		fontSize: 24,
+		fontSize: 35,
 		fontWeight: "bold",
 		marginBottom: 20,
 		textAlign: "center",
+		color: "white",
 	},
 });

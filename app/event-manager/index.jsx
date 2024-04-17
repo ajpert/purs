@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#ccc",
 	},
 	createButton: {
-		backgroundColor: "#F24E1E",
+		backgroundColor: "#Fe24E1E",
 	},
 
 	container: {

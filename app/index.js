@@ -9,14 +9,7 @@ import CompleteScreen from "../app/Complete-order/index";
 export default function Index() {
   return (
     <PaperProvider>
-
-    
-
-
       <App />
-
-
     </PaperProvider>
-
   );
 }
