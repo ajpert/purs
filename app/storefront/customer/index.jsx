@@ -457,8 +457,9 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 			</ScrollView>
 			<Card
 				style={{
-					margin: 20,
-					padding: 10,
+					marginHorizontal: 20,
+					marginBottom: 5,
+
 					borderRadius: 10,
 				}}
 			>
@@ -474,6 +475,32 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 					icon={"cart"}
 				>
 					View Cart ({cart?.length})
+				</Button>
+			</Card>
+			<Card
+				style={{
+					marginHorizontal: 20,
+					marginBottom: 20,
+					borderRadius: 10,
+				}}
+			>
+				<Button
+					style={{
+						position: "fixed",
+						bottom: 0,
+						width: "100%",
+						padding: 10,
+						borderRadius: 0,
+					}}
+					onPress={() => {
+						router.push({
+													pathname: "/pending",
+													params: { qr_reference: qr_reference },
+												})
+					}}
+					icon={"cart"}
+				>
+					View Pending 
 				</Button>
 			</Card>
 		</View>

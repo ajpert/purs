@@ -4,10 +4,10 @@ import React, { useEffect, useState, useContext } from "react";
 import { Alert, ScrollView, View, StyleSheet } from "react-native";
 import { Header } from "react-native-elements";
 import { Button, Card, Paragraph, Title } from "react-native-paper";
-import { supabase } from "../../../lib/supabase";
-import { useSupabaseChannel } from "../../../hooks/useSupabaseChannel";
-import { RoleContext } from "../../../context/RoleContext";
-import useAuth from "../../../hooks/useAuth";
+import { supabase } from "../../lib/supabase";
+import { useSupabaseChannel } from "../../hooks/useSupabaseChannel";
+import { RoleContext } from "../../context/RoleContext";
+import useAuth from "../../hooks/useAuth";
 
 export default function CustomerCartScreen() {
 	const { role } = useContext(RoleContext);
@@ -26,21 +26,17 @@ export default function CustomerCartScreen() {
 					const { data: { user } } = await supabase.auth.getUser();
 					const { data: getTest, error: errorTest } = await supabase
 						.from('test2')
-						.select('testData')
+						.select('pending_orders')
 						.eq('qr_id', qr_reference)
 						.single();
 
 					if (errorTest) {
-						console.error('Error fetching initial testData1:', errorTest);
+						console.error('Error fetching initial pending_orders:', errorTest);
 					} else {
-						const arr = getTest.testData.filter((item) => item.owner === user.id);
-						if (ownItems === 'true') {
+						const arr = getTest.pending_orders.filter((item) => item.owner === user.id);
+
 							setCart(arr);
 							
-						} else {
-							setCart(getTest.testData);
-							
-						}
 						setTotalCost(arr.reduce((acc, item) => acc + item.cost, 0));
 
 					}
@@ -62,15 +58,11 @@ export default function CustomerCartScreen() {
 					},
 					async (payload) => {
 						const { data: { user } } = await supabase.auth.getUser()
-						if (ownItems === 'true') {
-							const arr = payload.new.testData.filter((item) => item.owner === user.id);
-							setCart(arr);
+
+							const arr = payload.new.pending_orders.filter((item) => item.owner === user.id);
+							setCart(payload.new.pending_orders);
 							setTotalCost(arr.reduce((acc, item) => acc + item.cost, 0));
-						} else {
-							const arr = payload.new.testData.filter((item) => item.owner === user.id);
-							setCart(payload.new.testData);
-							setTotalCost(arr.reduce((acc, item) => acc + item.cost, 0));
-						}
+						
 					}
 				)
 				.subscribe();
@@ -92,11 +84,11 @@ export default function CustomerCartScreen() {
 				const updatedCart = cart.filter((item) => item.owner !== user.id);
 
 				// Update the testData in the database with the filtered cart
-				const { error } = await supabase
+				/*const { error } = await supabase
 					.from('test2')
-					.update({ testData: updatedCart })
+					.update({ pending_orders: updatedCart })
 					.eq('qr_id', qr_reference)
-					.select();
+					.select();*/
 
 				const { data } = await supabase
 					.from('test2')
@@ -112,23 +104,23 @@ export default function CustomerCartScreen() {
 					.single();
 
 				console.log("bruh bruh mc goo", userData)
-				const { error: addSpent } = await supabase
+				/*const { error: addSpent } = await supabase
 					.from('user_profiles')
 					.update({ spent: userData.spent + totalCost })
 					.eq('id', user.id)
-					.select();
+					.select();*/
 
 				const { error: addError } = await supabase
 					.from('test2')
-					.update({ pending_orders: to_add })
+					.update({ pending_orders: [] })
 					.eq('qr_id', qr_reference)
 					.select();
 
-				if (error) {
+				if (addError) {
 					console.error('Error updating testData:', error);
 				} else {
 					// Navigate back after successful update
-					router.push('/Complete-order');
+					
 				}
 			} else {
 				console.error('No user found');
@@ -147,7 +139,7 @@ export default function CustomerCartScreen() {
 			// Update the testData in the database
 			const { error } = await supabase
 				.from('test2')
-				.update({ testData: updatedData })
+				.update({ pending_orders: updatedData })
 				.eq('qr_id', qr_reference)
 				.select();
 
@@ -180,7 +172,7 @@ export default function CustomerCartScreen() {
 				// Update the testData in the database
 				const { error } = await supabase
 					.from('test2')
-					.update({ testData: updatedData })
+					.update({ pending_orders: updatedData })
 					.eq('qr_id', qr_reference)
 					.select();
 
@@ -206,7 +198,7 @@ export default function CustomerCartScreen() {
 		<View style={{ flex: 1, backgroundColor: "#171717" }}>
 			<Header
 				centerComponent={{
-					text: "C sCart",
+					text: "Pending",
 					style: { color: "#fff", fontSize: 32, fontWeight: "bold" },
 				}}
 				containerStyle={{ backgroundColor: "#171717" }}
@@ -257,23 +249,24 @@ export default function CustomerCartScreen() {
 
 							<Button
 								mode="contained"
-								icon={"close"}
+								icon={"check"}
 								style={{
 									margin: 10,
 									borderRadius: 10,
 									backgroundColor: "#3f3f46",
 									opacity: 2
 								}}
-								onPress={() => role === 'Merchant' || session?.user?.id === item.owner ? removeFromCart(item.id) : handleSelect(item.id)}
+								onPress={() => role === 'Merchant'  ? removeFromCart(item.id) : {}}
 							>
-								{role === 'Merchant' || session?.user?.id === item.owner ? 'Remove from Cart' : 'Select'}
+								{role === 'Merchant' ? 'Complete' : 'Awaiting'}
 							</Button>
 						</Card>
 					</View>
 
 				))}
 			</ScrollView>
-			<Card
+            {role !== 'Customer' ?
+            <Card
 				style={{
 					margin: 20,
 					padding: 10,
@@ -288,14 +281,14 @@ export default function CustomerCartScreen() {
 						padding: 10,
 						borderRadius: 0,
 					}}
-					onPress={role === 'Customer' && ownedItemsCount != 0 ? handlePress : () => { 
-
-					 }}
-					icon={"cart"}
+					onPress={handlePress}
+					icon={"check"}
 				>
-					{role === 'Customer' ? `Check Out (${ownedItemsCount}) - Total: $${totalCost.toFixed(2)}` : 'Awaiting Order'}
+					{role === 'Customer' ? `Check Out (${ownedItemsCount}) - Total: $${totalCost.toFixed(2)}` : 'Complete Orders'}
 				</Button>
-			</Card>
+			</Card> : <></>
+            }
+
 		</View>
 	);
 }
