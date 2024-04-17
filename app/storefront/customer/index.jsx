@@ -500,7 +500,7 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 					}}
 					icon={"cart"}
 				>
-					View Pending 
+					View Orders
 				</Button>
 			</Card>
 		</View>

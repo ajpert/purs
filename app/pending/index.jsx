@@ -80,8 +80,6 @@ export default function CustomerCartScreen() {
 
 			if (user) {
 				// Filter the cart to keep only items that don't belong to the current user
-				const itemsToRemove = cart.filter((item) => item.owner === user.id);
-				const updatedCart = cart.filter((item) => item.owner !== user.id);
 
 				// Update the testData in the database with the filtered cart
 				/*const { error } = await supabase
@@ -96,7 +94,9 @@ export default function CustomerCartScreen() {
 					.eq('qr_id', qr_reference)
 					.single();
 
-				const to_add = [...data.pending_orders, ...itemsToRemove]
+                const totalCost = data.pending_orders.reduce((acc, item) => acc + item.cost, 0);
+
+				//const to_add = [...data.pending_orders, ...itemsToRemove]
 				const { data: userData} = await supabase
 					.from('user_profiles')
 					.select('*')
@@ -104,11 +104,11 @@ export default function CustomerCartScreen() {
 					.single();
 
 				console.log("bruh bruh mc goo", userData)
-				/*const { error: addSpent } = await supabase
+				const { error: addSpent } = await supabase
 					.from('user_profiles')
-					.update({ spent: userData.spent + totalCost })
+					.update({ recieved: userData.recieved + totalCost, recieved_history: [...userData.recieved_history, ...data.pending_orders]})
 					.eq('id', user.id)
-					.select();*/
+					.select();
 
 				const { error: addError } = await supabase
 					.from('test2')
@@ -133,8 +133,21 @@ export default function CustomerCartScreen() {
 	const removeFromCart = async (id) => {
 		console.log("IN DELETE")
 		try {
+            const { data: { user } } = await supabase.auth.getUser();
 			// Remove the item with the given id from the testData array
 			const updatedData = cart.filter((item) => item.id !== id);
+            const removedItem = cart.find((item) => item.id === id);
+
+            const { data: userData} = await supabase
+					.from('user_profiles')
+					.select('*')
+					.eq('id', user.id)
+					.single();
+            const { error: addSpent } = await supabase
+                .from('user_profiles')
+                .update({ recieved: userData.recieved + removedItem.cost, recieved_history: [...userData.recieved_history, removedItem]})
+                .eq('id', user.id)
+                .select();
 
 			// Update the testData in the database
 			const { error } = await supabase
@@ -147,8 +160,7 @@ export default function CustomerCartScreen() {
 				console.error('Error updating testData:', error);
 			} else {
 				// Update the totalCost
-				const removedItem = cart.find((item) => item.id === id);
-				setTotalCost(prevTotalCost => prevTotalCost - removedItem.cost);
+
 			}
 		} catch (error) {
 			console.error('Error removing item from cart:', error);

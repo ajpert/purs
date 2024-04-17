@@ -111,12 +111,14 @@ export default function CustomerCartScreen() {
 					.eq('id', user.id)
 					.single();
 
-				console.log("bruh bruh mc goo", userData)
-				const { error: addSpent } = await supabase
-					.from('user_profiles')
-					.update({ spent: userData.spent + totalCost })
-					.eq('id', user.id)
-					.select();
+					const spent_history = [...userData.spent_history, ...itemsToRemove]
+
+					console.log("bruh bruh mc goo", userData)
+					const { error: addSpent } = await supabase
+						.from('user_profiles')
+						.update({ spent: userData.spent + totalCost, spent_history: spent_history })
+						.eq('id', user.id)
+						.select();
 
 				const { error: addError } = await supabase
 					.from('test2')
