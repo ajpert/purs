@@ -1,4 +1,4 @@
-import { router, useNavigation, useRouter } from "expo-router";
+import { router, useNavigation, useRouter, useFocusEffect } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ScrollView,
@@ -82,6 +82,8 @@ const EventManager = (props) => {
 	const hideModal = () => {
 		setVisible(false);
 	};
+	const [cart, setCart] = useState([]);
+	
 	const [events, setEvents] = useState([]);
 
 	const [currentEventId, setCurrentEventId] = useState(null);
@@ -119,7 +121,6 @@ const EventManager = (props) => {
 				})
 				.eq("merchant_id", user.id);
 			getEvents();
-			console.log(data);
 			if (error) {
 				throw error;
 			}
@@ -152,6 +153,7 @@ const EventManager = (props) => {
 		}
 	};
 
+
 	function handleLongPress(event) {
 		setCancelOrDelete("Delete");
 		setUpdateOrAdd("Update");
@@ -167,19 +169,43 @@ const EventManager = (props) => {
 			data: { user },
 		} = await supabase.auth.getUser();
 		try {
-			const { data, error } = await supabase
-				.from("events")
+		  const { data, error } = await supabase
+			.from("events")
+			.select("*")
+			.eq("merchant_id", user.id);
+	  
+		  if (error) {
+			throw error;
+		  }
+	  
+		  // Fetch cart data for each event
+		  const eventsWithCarts = await Promise.all(
+			data.map(async (event) => {
+			  const { data: cartData, error: cartError } = await supabase
+				.from("test2")
 				.select("*")
-				.eq("merchant_id", user.id);
-
-			if (error) {
-				throw error;
-			}
-			setEvents(data);
+				.eq("qr_id", event.cart_id)
+				.single();
+	  
+			  if (cartError) {
+				console.error("Error fetching cart data:", cartError);
+				return event;
+			  }
+			  console.log("CART DATA beep bop", cartData.pending_orders)
+	  
+			  return {
+				...event,
+				cart: cartData.testData,
+				pending_orders: cartData.pending_orders,
+			  };
+			})
+		  );
+	  
+		  setEvents(eventsWithCarts);
 		} catch (error) {
-			console.log("Error", error);
+		  console.log("Error", error);
 		}
-	};
+	  };
 
 	/*
 		useEffect(() => {
@@ -191,8 +217,66 @@ const EventManager = (props) => {
 	useEffect(() => {
 		(async () => {
 			await getEvents();
-		})();
+		}
+		
+		)();
 	}, []);
+console.log("HERE")
+useFocusEffect(
+	React.useCallback(() => {
+		getEvents();
+	}, [])
+)
+	useFocusEffect(
+		React.useCallback(() => {
+
+	
+			// Check if events array is not empty
+			if (events.length > 0) {
+				const fetchInitialData = async () => {
+					try {
+						const { data: { user } } = await supabase.auth.getUser();
+						const { data: getTest, error: errorTest } = await supabase
+							.from('test2')
+							.select('testData')
+							.eq('qr_id', events[0].cart_id)
+							.single();
+	
+						if (errorTest) {
+							console.error('Error fetching initial testData3:', errorTest);
+						} else {
+							setCart(getTest.testData);
+						}
+					} catch (error) {
+						console.error('Error fetching initial data4:', error);
+					}
+				};
+	
+				fetchInitialData();
+
+				const channel = supabase
+					.channel("table-filter-changes")
+					.on(
+						"postgres_changes",
+						{
+							event: "*",
+							schema: "public",
+							table: 'test2',
+							filter: `qr_id=in.(${events.map(event => event.cart_id).join(',')})`,
+						},
+						(payload) => {
+							console.log("ASDF")
+							getEvents();
+						}
+					)
+					.subscribe();
+	
+				return () => {
+					channel.unsubscribe();
+				}
+			}
+		}, [events])
+	)
 
 	async function addOrUpdateEvent(type) {
 		if (type === "Create") {
@@ -354,18 +438,15 @@ const EventManager = (props) => {
 															fontSize: 15,
 														}}
 													>
-														Created:{" "}
-														{new Date(
-															event.created_at
-														).toLocaleTimeString(
-															[],
-															{
-																hour: "2-digit",
-																minute:
-																	"2-digit",
-																hour12: true,
-															}
-														)}
+														Items in cart: {event.cart.length}
+													</Text>
+													<Text
+														style={{
+															color: "black",
+															fontSize: 15,
+														}}
+													>
+														pending_orders: {event.pending_orders.length}
 													</Text>
 												</View>
 
@@ -444,7 +525,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#ccc",
 	},
 	createButton: {
-		backgroundColor: "#Fe24E1E",
+		backgroundColor: "#90EE90",
 	},
 
 	container: {

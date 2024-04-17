@@ -19,6 +19,13 @@ import {
 	Title,
 } from "react-native-paper";
 
+/*
+import React, { useState, useEffect, useContext } from "react";
+import { ScrollView, View, StyleSheet, TouchableOpacity, Text } from "react-native";
+import { Header } from "react-native-elements";
+import { Button, Card, Paragraph, Title, Appbar, Portal, Modal, Switch, TextInput } from "react-native-paper";
+*/
+
 import { useLocalSearchParams } from "expo-router";
 import { supabase } from "../../../lib/supabase";
 
@@ -77,38 +84,125 @@ const randomUUID = () => {
 const mockData = [
 	{
 		id: randomUUID(),
-		name: "Playstation 5",
-		description: "The best gaming console you can buy.",
-		imageUrl:
-			"https://www.ps5playstation.com/wp-content/uploads/2020/09/ps5-1.png",
+		name: "Bacon and Eggs",
+		description: "The best bacon in town.",
+		imageUrl: "http://placebacon.net/400/300?image=1",
+		cost: 10,
 	},
 	{
 		id: randomUUID(),
-		name: "Dell XPS 13",
-		description: "A powerful laptop for work and play.",
-		imageUrl:
-			"https://www.dell.com/learn/us/en/uscorp1/campaigns/xps-13-9300-laptop/xps-13-9300-laptop-hero-504x350.jpg",
+		name: "Bacon the Sequel",
+		description: "The second best bacon in town",
+		imageUrl: "http://placebacon.net/400/300?image=2",
+		cost: 15,
 	},
 	{
 		id: randomUUID(),
-		name: "Canon EOS R5",
-		description: "A professional camera for photographers.",
-		imageUrl:
-			"https://www.canon.co.uk/media/canon-eos-r5-5-6-8k-video-photography-camera_tcm14-1710324.png",
+		name: "Bacon the Threequel",
+		description: "Just some bacon.",
+		imageUrl: "http://placebacon.net/400/300?image=3",
+		cost: 8,
 	},
 	{
 		id: randomUUID(),
-		name: "DJI Mavic Air 2",
-		description: "A compact drone for aerial photography.",
-		imageUrl: "https://www.dji.com/sg/mini2",
+		name: "Bacon the Fourthquel",
+		description: "BACON BABY!",
+		imageUrl: "http://placebacon.net/400/300?image=4",
+		cost: 20,
 	},
 	{
 		id: randomUUID(),
-		name: "Samsung Galaxy S21",
-		description: "The latest smartphone from Samsung.",
-		imageUrl: "https://www.samsung.com/sg/smartphones/galaxy-s21-5g/",
+		name: "Bacon quatro cinco",
+		description: "Who don't love bacon?",
+		imageUrl: "http://placebacon.net/400/300?image=5",
+		cost: 10,
 	},
 ];
+const MoneyCard = ({ handleAddToCart }) => {
+
+	const [memo, setMemo] = useState('');
+  
+	const [amount, setAmount] = useState('');
+
+	const handleAmountChange = (text) => {
+	  setAmount(text);
+	};
+  
+	const handleMemoChange = (text) => {
+	  setMemo(text);
+	};
+  
+	const handleAddMoney = () => {
+		const numericAmount = parseFloat(amount);
+	  
+		if (!isNaN(numericAmount) && numericAmount > 0) {
+		  const item = {
+			id: randomUUID(),
+			name: `Sending`,
+			description: `Note: ${memo}`,
+			cost: numericAmount,
+		  };
+	  
+		  handleAddToCart(item);
+		  setAmount('');
+		  setMemo('');
+		}
+	  };
+  
+	return (
+	  <Card
+		key="money"
+		style={{
+		  margin: 5,
+		  padding: 10,
+		  borderRadius: 10,
+		  backgroundColor: '#262626',
+		  position: 'relative',
+		}}
+	  >
+		<Card.Content
+		  style={{
+			position: 'absolute',
+			zIndex: 1,
+			backgroundColor: 'rgba(0,0,0,0.5)',
+			borderRadius: 10,
+			padding: 10,
+			width: '100%',
+		  }}
+		>
+		  <Title style={{ color: '#fff' }}>Send Money</Title>
+		  <Paragraph style={{ color: '#fff' }}>
+			Enter an amount and an optional memo
+		  </Paragraph>
+		</Card.Content>
+		<Card.Cover  style={{ objectFit: 'cover', height: 100, backgroundColor: 'green' }} />
+		<TextInput
+		  style={styles.input}
+		  placeholder="Enter amount"
+		  keyboardType="numeric"
+		  value={amount.toString()}
+		  onChangeText={handleAmountChange}
+		/>
+		<TextInput
+		  style={styles.input}
+		  placeholder="Enter memo (optional)"
+		  value={memo}
+		  onChangeText={handleMemoChange}
+		/>
+		<Button
+		  mode="contained"
+		  style={{
+			margin: 10,
+			borderRadius: 10,
+			backgroundColor: '#3f3f46',
+		  }}
+		  onPress={handleAddMoney}
+		>
+		  Add Money
+		</Button>
+	  </Card>
+	);
+  };
 
 export default function CustomerStoreFront() {
 	const { role } = useContext(RoleContext);
@@ -127,11 +221,11 @@ export default function CustomerStoreFront() {
 	const showModal = () => setVisible(true);
 
 	const [isSwitchOn, setIsSwitchOn] = React.useState(false);
-
-	const onToggleSwitch = async () => {
-		await fetchData();
-		setIsSwitchOn(!isSwitchOn);
-	};
+  
+	const onToggleSwitch = async () => { 
+		await fetchData(); 
+		setIsSwitchOn(!isSwitchOn)
+	}
 
 	//const temp = useSupabaseChannel("test2", qr_reference)
 
@@ -261,21 +355,23 @@ export default function CustomerStoreFront() {
 			// Create a new item to be added
 			const newItem = {
 				id: randomUUID(),
-				name: "Bacon",
-				description: "The best bacon in town.",
-				imageUrl: "http://placebacon.net/400/300?image=1",
+				name: `${item.name} - $${item.cost}`,
+				description: `${item.description}`,
+				imageUrl: `${item.imageUrl}`,
+				cost: item.cost,
 			};
-			item.id = randomUUID();
+
 
 			if (role === "Customer") {
-				item.owner = user.id;
-			} else {
-				console.log("ADDING FROM MERCHANT");
-				item.owner = "";
+				newItem.owner = user.id;
 			}
+			else {
+				console.log("ADDING FROM MERCHANT")
+				newItem.owner = ""
+			
 
 			// Combine the existing testData with the new item
-			const newData = [...getTest.testData, item];
+			const newData = [...getTest.testData, newItem];
 
 			// Update the testData in the database
 			const { data, error } = await supabase
@@ -339,8 +435,8 @@ export default function CustomerStoreFront() {
 					</View>
 				</Modal>
 			</Portal>
-
-			<ScrollView>
+			<ScrollView style={{ padding: 10 }}>
+			<MoneyCard handleAddToCart={handleAddToCart} />
 				{mockData.map((item) => (
 					<Card
 						key={item.id}
@@ -362,7 +458,7 @@ export default function CustomerStoreFront() {
 								width: "100%",
 							}}
 						>
-							<Title style={{ color: "#fff" }}>{item.name}</Title>
+							<Title style={{ color: "#fff" }}>{item.name} - {item.cost}$</Title>
 							<Paragraph style={{ color: "#fff" }}>
 								{item.description}
 							</Paragraph>
@@ -385,9 +481,52 @@ export default function CustomerStoreFront() {
 					</Card>
 				))}
 			</ScrollView>
-			<Card className="w-1/4 p-10 bg-gray-800">
-				<Button onPress={handlePress} icon={"cart"}>
+			<Card
+				style={{
+					marginHorizontal: 20,
+					marginBottom: 5,
+
+					borderRadius: 10,
+				}}
+			>
+				<Button
+					style={{
+						position: "fixed",
+						bottom: 0,
+						width: "100%",
+						padding: 10,
+						borderRadius: 0,
+					}}
+					onPress={handlePress}
+					icon={"cart"}
+				>
 					View Cart ({cart?.length})
+				</Button>
+			</Card>
+			<Card
+				style={{
+					marginHorizontal: 20,
+					marginBottom: 20,
+					borderRadius: 10,
+				}}
+			>
+				<Button
+					style={{
+						position: "fixed",
+						bottom: 0,
+						width: "100%",
+						padding: 10,
+						borderRadius: 0,
+					}}
+					onPress={() => {
+						router.push({
+													pathname: "/pending",
+													params: { qr_reference: qr_reference },
+												})
+					}}
+					icon={"cart"}
+				>
+					View Pending 
 				</Button>
 			</Card>
 		</View>

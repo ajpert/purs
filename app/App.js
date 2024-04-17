@@ -21,30 +21,33 @@ export default function App() {
     });
   }, []);
 
-  if (session && session.user) {
+if (session && session.user) {
     console.log("WE IN HERE");
     return <Redirect href={"ChoiceScreen"} />;
   }
   return (
-    <View style={{ backgroundColor: "black" }}>
+    <View style={styles.container}>
       {sentCode ? (
         <OTPVerify phone={phone} />
       ) : (
         <Auth phone={phone} setPhone={setPhone} setSentCode={setSentCode} />
-      )}
-      {session && session.user && (
-        <Text style={styles.header}>Yay! You're authenticated!</Text>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 20,
+    paddingBottom: '40%',
+    backgroundColor: "black",
+  },
   subheader: {
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
     marginTop: 20,
-    color: "white",
   },
 });
