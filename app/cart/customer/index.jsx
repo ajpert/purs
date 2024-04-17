@@ -12,15 +12,16 @@ import useAuth from "../../../hooks/useAuth";
 export default function CustomerCartScreen() {
 	const {role} = useContext(RoleContext);
 	const {session} = useAuth();
-	const { qr_reference } = useLocalSearchParams();
+	const { qr_reference, ownItems } = useLocalSearchParams();
 	const [cart, setCart] = useState([]);
 
-
+console.log(ownItems)
 
 	useFocusEffect(
 		React.useCallback(() => {
 			const fetchInitialData = async () => {
 				try {
+					const { data: { user } } = await supabase.auth.getUser();
 					const { data: getTest, error: errorTest } = await supabase
 						.from('test2')
 						.select('testData')
@@ -30,7 +31,14 @@ export default function CustomerCartScreen() {
 					if (errorTest) {
 						console.error('Error fetching initial testData1:', errorTest);
 					} else {
-						setCart(getTest.testData);
+						if (ownItems === 'true') {
+							const arr = getTest.testData.filter((item) => item.owner === user.id);
+							setCart(arr);
+						}
+						else {
+							setCart(getTest.testData);
+						}
+						
 					}
 				} catch (error) {
 					console.error('Error fetching initial data2:', error);
@@ -49,8 +57,13 @@ export default function CustomerCartScreen() {
 						filter: `qr_id=eq.${qr_reference}`,
 					},
 					(payload) => {
-						console.log(payload.new.testData);
-						setCart(payload.new.testData);
+						if (ownItems === 'true') {
+							const arr = payload.new.testData.filter((item) => item.owner === user.id);
+							setCart(arr);
+						}
+						else {
+							setCart(payload.new.testData);
+						}
 					}
 				)
 				.subscribe();
