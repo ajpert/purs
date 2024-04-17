@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 20,
 		borderRadius: 25,
 		height: 80,
-		width: "50%",
+		width: "80%",
 		justifyContent: "center",
 		marginBottom: 15,
 	},
