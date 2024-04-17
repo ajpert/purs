@@ -534,7 +534,7 @@ export default function CustomerStoreFront() {
 					}}
 					icon={"cart"}
 				>
-					View Pending
+					View Orders
 				</Button>
 			</Card>
 		</View>
