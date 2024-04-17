@@ -54,7 +54,7 @@ const ChoiceScreen = () => {
   };
 
   return (
-    <View className="flex flex-col items-center my-32">
+    <View className="flex flex-col items-center justify-center h-1/2 my-auto">
       <View className="self-stretch ml-8 mr-8 mt-6">
         <Text className="text-white text-4xl text-left mx-auto">
           Which best fits you?
