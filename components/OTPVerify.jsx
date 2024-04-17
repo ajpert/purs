@@ -36,6 +36,18 @@ export default function OTPVerify({ phone }) {
 			setLoading(false);
 			Alert.alert(error.message);
 		} else {
+			let { data: user_profiles, error } = await supabase
+				.from('user_profiles')
+				.select('id')
+				.eq('id', session.user.id)
+
+			if (user_profiles.length === 0) {
+				let { data, error } = await supabase
+					.from('user_profiles')
+					.insert([{ id: session.user.id }])
+				console.log("added")
+			}
+			console.log(user_profiles)
 			setLoading(false);
 			    router.replace("/ChoiceScreen");
 		}

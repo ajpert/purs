@@ -105,8 +105,19 @@ export default function CustomerCartScreen() {
 					.single();
 
 				const to_add = [...data.pending_orders, ...itemsToRemove]
+				const { data: userData} = await supabase
+					.from('user_profiles')
+					.select('*')
+					.eq('id', user.id)
+					.single();
 
-				console.log("OOGA BOOGA data", data)
+				console.log("bruh bruh mc goo", userData)
+				const { error: addSpent } = await supabase
+					.from('user_profiles')
+					.update({ spent: userData.spent + totalCost })
+					.eq('id', user.id)
+					.select();
+
 				const { error: addError } = await supabase
 					.from('test2')
 					.update({ pending_orders: to_add })
@@ -203,7 +214,9 @@ export default function CustomerCartScreen() {
 
 			<ScrollView style={{ padding: 10, marginTop: 32 }}>
 				{cart.map((item) => (
-					<View style={{
+					<View 
+					key={item.id}
+					style={{
 
 
 					}}>

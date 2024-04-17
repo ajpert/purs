@@ -1,19 +1,34 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, StyleSheet, Image, Modal, Button } from 'react-native';
 import { router } from 'expo-router';
 
 import { useAuth } from '../hooks/useAuth';
 
 import { RoleContext } from '../context/RoleContext';
+import { supabase } from '../lib/supabase';
 
 const ChoiceScreen = () => {
+    const [user, setUser] = useState(null);
     const { setRole } = useContext(RoleContext);
     const [modalVisible, setModalVisible] = useState(false);
+    const [userData, setUserData] = useState(null);
+    const [connected, setConnected] = useState(false);
 
-    const handleSubmit = () => {
-        // Handle phone number submission logic here
-        console.log('Phone Number:', phoneNumber);  
-    };
+
+    useEffect(() => {
+        async function fetchUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', user.id)
+
+            setUserData(data[0]);
+            setUser(user);
+        }
+        fetchUser();
+    }, [])
+    console.log("USER", user, userData)
     
     handleRoleSelection = (role) => {
         setRole(role);
@@ -31,53 +46,55 @@ const ChoiceScreen = () => {
     };
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Let's Figure You Out 👋</Text>
-            <View style={styles.textContainer}>
+            {user ? <><Text style={styles.text}>Let's Figure You Out 👋</Text><View style={styles.textContainer}>
                 <Text style={styles.normalText}>Are you a customer or a Merchant?</Text>
-            </View>
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={[styles.button, styles.buttonBank]}
-                    onPress={() => handleRoleSelection('Bank')}>
-                    <Image style={styles.buttonLogo} source={require('../assets/bank.png')} />
-                    <Text style={styles.buttonText}>Connect to Bank</Text>
-                    <Image style={styles.buttonEdit} source={require('../assets/edit.png')} />
-                    <BankConnectionModal visible={modalVisible} onClose={() => setModalVisible(false)} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.button, styles.buttonCustomer]}
-                    onPress={() => handleRoleSelection('Customer')}>
-                    <Image
-                    style={styles.buttonLogo}
-                    source={require('../assets/customer.png')}
-                    />
-                    <Text style={styles.buttonText}>Customer</Text>
+            </View><View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                        style={[styles.button, styles.buttonBank, {backgroundColor: userData.connected || connected ? 'lightgreen' : 'white'}]}
+                        onPress={() => handleRoleSelection('Bank')}>
+                        <Image style={styles.buttonLogo} source={require('../assets/bank.png')} />
+                        <Text style={styles.buttonText}>{userData.connected || connected ? 'Bank Connected' : 'Connect to Bank'}</Text>
+                        <Image style={styles.buttonEdit} source={require('../assets/edit.png')} />
+                        <BankConnectionModal visible={modalVisible} onClose={() => {setModalVisible(false); setConnected(true)}} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.button, styles.buttonCustomer]}
+                        onPress={() => handleRoleSelection('Customer')}>
+                        <Image
+                            style={styles.buttonLogo}
+                            source={require('../assets/customer.png')} />
+                        <Text style={styles.buttonText}>Customer</Text>
 
-                    <Image
-                    style={styles.buttonArrow}
-                    source={require('../assets/arrow-1.png')}
-                    />
-                    
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.button, styles.buttonMerchant]}
-                    onPress={() => handleRoleSelection('Merchant')}>
-                    <Image
-                    style={styles.buttonLogo}
-                    source={require('../assets/merchant-1.png')}
-                    />
-                    <Text style={styles.buttonText}>Merchant</Text>
-                    <Image
-                    style={styles.buttonArrow}
-                    source={require('../assets/arrow-1.png')}
-                    />
-                </TouchableOpacity> 
-            </View>
+                        <Image
+                            style={styles.buttonArrow}
+                            source={require('../assets/arrow-1.png')} />
+
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.button, styles.buttonMerchant]}
+                        onPress={() => handleRoleSelection('Merchant')}>
+                        <Image
+                            style={styles.buttonLogo}
+                            source={require('../assets/merchant-1.png')} />
+                        <Text style={styles.buttonText}>Merchant</Text>
+                        <Image
+                            style={styles.buttonArrow}
+                            source={require('../assets/arrow-1.png')} />
+                    </TouchableOpacity>
+                </View></> : <></>}
         </View>
     );
 };
 
 const BankConnectionModal = ({ visible, onClose }) => {
+    const setBank = async () => { 
+        const { data: { user } } = await supabase.auth.getUser();
+        const {data, error} = await supabase
+        .from('user_profiles')
+        .update({ connected: true })
+        .eq('id', user.id)
+        onClose();
+    }
     const [accountNumber, setAccountNumber] = useState('');
     const [routingNumber, setRoutingNumber] = useState('');
     const [accountHolderName, setAccountHolderName] = useState('');
@@ -86,7 +103,7 @@ const BankConnectionModal = ({ visible, onClose }) => {
             animationType="slide"
             transparent={true}
             visible={visible}
-            onRequestClose={onClose}
+            onRequestClose={setBank}
         >
             <View style={styles.centeredView}>
                 <View style={styles.modalView}>
@@ -95,22 +112,25 @@ const BankConnectionModal = ({ visible, onClose }) => {
                         onChangeText={setAccountNumber}
                         value={accountNumber}
                         placeholder="Account Number"
+                        placeholderTextColor={'grey'}
                     />
                     <TextInput
                         style={styles.input}
                         onChangeText={setRoutingNumber}
                         value={routingNumber}
                         placeholder="Routing Number"
+                        placeholderTextColor={'grey'}
                     />
                     <TextInput
                         style={styles.input}
                         onChangeText={setAccountHolderName}
                         value={accountHolderName}
                         placeholder="Account Holder Name"
+                        placeholderTextColor={'grey'}
                     />
                     <Button
                         title="Submit"
-                        onPress={onClose}
+                        onPress={setBank}
                     />
                 </View>
             </View>
@@ -220,6 +240,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         padding: 10,
         width: 200,
+        color: 'black',
     }
 });
 
