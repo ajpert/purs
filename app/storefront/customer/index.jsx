@@ -5,6 +5,7 @@ import {
 	ScrollView,
 	StyleSheet,
 	Text,
+	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
@@ -119,90 +120,95 @@ const mockData = [
 	},
 ];
 const MoneyCard = ({ handleAddToCart }) => {
+	const [memo, setMemo] = useState("");
 
-	const [memo, setMemo] = useState('');
-  
-	const [amount, setAmount] = useState('');
+	const [amount, setAmount] = useState("");
 
 	const handleAmountChange = (text) => {
-	  setAmount(text);
+		setAmount(text);
 	};
-  
+
 	const handleMemoChange = (text) => {
-	  setMemo(text);
+		setMemo(text);
 	};
-  
+
 	const handleAddMoney = () => {
 		const numericAmount = parseFloat(amount);
-	  
+
 		if (!isNaN(numericAmount) && numericAmount > 0) {
-		  const item = {
-			id: randomUUID(),
-			name: `Sending`,
-			description: `Note: ${memo}`,
-			cost: numericAmount,
-		  };
-	  
-		  handleAddToCart(item);
-		  setAmount('');
-		  setMemo('');
+			const item = {
+				id: randomUUID(),
+				name: `Sending`,
+				description: `Note: ${memo}`,
+				cost: numericAmount,
+			};
+
+			handleAddToCart(item);
+			setAmount("");
+			setMemo("");
 		}
-	  };
-  
+	};
+
 	return (
-	  <Card
-		key="money"
-		style={{
-		  margin: 5,
-		  padding: 10,
-		  borderRadius: 10,
-		  backgroundColor: '#262626',
-		  position: 'relative',
-		}}
-	  >
-		<Card.Content
-		  style={{
-			position: 'absolute',
-			zIndex: 1,
-			backgroundColor: 'rgba(0,0,0,0.5)',
-			borderRadius: 10,
-			padding: 10,
-			width: '100%',
-		  }}
+		<Card
+			key="money"
+			style={{
+				margin: 5,
+				padding: 10,
+				borderRadius: 10,
+				backgroundColor: "#262626",
+				position: "relative",
+			}}
 		>
-		  <Title style={{ color: '#fff' }}>Send Money</Title>
-		  <Paragraph style={{ color: '#fff' }}>
-			Enter an amount and an optional memo
-		  </Paragraph>
-		</Card.Content>
-		<Card.Cover  style={{ objectFit: 'cover', height: 100, backgroundColor: 'green' }} />
-		<TextInput
-		  style={styles.input}
-		  placeholder="Enter amount"
-		  keyboardType="numeric"
-		  value={amount.toString()}
-		  onChangeText={handleAmountChange}
-		/>
-		<TextInput
-		  style={styles.input}
-		  placeholder="Enter memo (optional)"
-		  value={memo}
-		  onChangeText={handleMemoChange}
-		/>
-		<Button
-		  mode="contained"
-		  style={{
-			margin: 10,
-			borderRadius: 10,
-			backgroundColor: '#3f3f46',
-		  }}
-		  onPress={handleAddMoney}
-		>
-		  Add Money
-		</Button>
-	  </Card>
+			<Card.Content
+				style={{
+					position: "absolute",
+					zIndex: 1,
+					backgroundColor: "rgba(0,0,0,0.5)",
+					borderRadius: 10,
+					padding: 10,
+					width: "100%",
+				}}
+			>
+				<Title style={{ color: "#fff" }}>Send Money</Title>
+				<Paragraph style={{ color: "#fff" }}>
+					Enter an amount and an optional memo
+				</Paragraph>
+			</Card.Content>
+			<Card.Cover
+				style={{
+					objectFit: "cover",
+					height: 100,
+					backgroundColor: "green",
+				}}
+			/>
+			<TextInput
+				style={styles.input}
+				placeholder="Enter amount"
+				keyboardType="numeric"
+				value={amount.toString()}
+				onChangeText={handleAmountChange}
+			/>
+			<TextInput
+				style={styles.input}
+				placeholder="Enter memo (optional)"
+				value={memo}
+				onChangeText={handleMemoChange}
+			/>
+			<Button
+				mode="contained"
+				style={{
+					margin: 10,
+					borderRadius: 10,
+					backgroundColor: "#3f3f46",
+				}}
+				onPress={handleAddMoney}
+			>
+				Add Money
+			</Button>
+		</Card>
 	);
-  };
+};
 
 export default function CustomerStoreFront() {
 	const { role } = useContext(RoleContext);
@@ -221,11 +227,11 @@ export default function CustomerStoreFront() {
 	const showModal = () => setVisible(true);
 
 	const [isSwitchOn, setIsSwitchOn] = React.useState(false);
-  
-	const onToggleSwitch = async () => { 
-		await fetchData(); 
-		setIsSwitchOn(!isSwitchOn)
-	}
+
+	const onToggleSwitch = async () => {
+		await fetchData();
+		setIsSwitchOn(!isSwitchOn);
+	};
 
 	//const temp = useSupabaseChannel("test2", qr_reference)
 
@@ -361,14 +367,12 @@ export default function CustomerStoreFront() {
 				cost: item.cost,
 			};
 
-
 			if (role === "Customer") {
 				newItem.owner = user.id;
+			} else {
+				console.log("ADDING FROM MERCHANT");
+				newItem.owner = "";
 			}
-			else {
-				console.log("ADDING FROM MERCHANT")
-				newItem.owner = ""
-			
 
 			// Combine the existing testData with the new item
 			const newData = [...getTest.testData, newItem];
@@ -436,7 +440,7 @@ export default function CustomerStoreFront() {
 				</Modal>
 			</Portal>
 			<ScrollView style={{ padding: 10 }}>
-			<MoneyCard handleAddToCart={handleAddToCart} />
+				<MoneyCard handleAddToCart={handleAddToCart} />
 				{mockData.map((item) => (
 					<Card
 						key={item.id}
@@ -458,7 +462,9 @@ export default function CustomerStoreFront() {
 								width: "100%",
 							}}
 						>
-							<Title style={{ color: "#fff" }}>{item.name} - {item.cost}$</Title>
+							<Title style={{ color: "#fff" }}>
+								{item.name} - {item.cost}$
+							</Title>
 							<Paragraph style={{ color: "#fff" }}>
 								{item.description}
 							</Paragraph>
@@ -520,13 +526,13 @@ export default function CustomerStoreFront() {
 					}}
 					onPress={() => {
 						router.push({
-													pathname: "/pending",
-													params: { qr_reference: qr_reference },
-												})
+							pathname: "/pending",
+							params: { qr_reference: qr_reference },
+						});
 					}}
 					icon={"cart"}
 				>
-					View Pending 
+					View Pending
 				</Button>
 			</Card>
 		</View>
