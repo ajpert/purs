@@ -438,7 +438,6 @@ const styles = StyleSheet.create({
 		height: 50,
 		justifyContent: "center",
 	},
-
 	eventButton: {
 		backgroundColor: "white",
 		paddingVertical: 12,

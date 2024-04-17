@@ -1,9 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect, useNavigation, useRouter } from "expo-router";
 import React, { useState, useEffect, useContext } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, View, StyleSheet, TouchableOpacity, Text } from "react-native";
 import { Header } from "react-native-elements";
-import { Button, Card, Paragraph, Title,Appbar } from "react-native-paper";
+import { Button, Card, Paragraph, Title, Appbar, Portal, Modal, Switch } from "react-native-paper";
 
 import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams } from "expo-router";
@@ -14,6 +14,7 @@ import { RoleContext } from "../../../context/RoleContext";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 function HeaderComponent(props) {
+
 	const navigation = useNavigation();
 	const router = useRouter();
 	const [isNavigationReady, setIsNavigationReady] = useState(false);
@@ -48,7 +49,7 @@ function HeaderComponent(props) {
 				icon="cog"
 				color={"white"}
 				onPress={() => {
-					props.showModal();
+					props.showModal()
 				}}
 			/>
 		</Appbar.Header>
@@ -108,15 +109,50 @@ export default function CustomerStoreFront() {
 
 	const [cart, setCart] = useState([]);
 
+
+	const [visible, setVisible] = useState(false);
+
+	const hideModal = () => setVisible(false);
+	const showModal = () => setVisible(true);
+
+	const [isSwitchOn, setIsSwitchOn] = React.useState(false);
+
+	const onToggleSwitch = () => { fetchData(); setIsSwitchOn(!isSwitchOn)};
+
 	//const temp = useSupabaseChannel("test2", qr_reference)
 
 	//console.log("TEMP", temp.length)
+	const fetchData = async () => {
+		try {
+			const { data: { user } } = await supabase.auth.getUser();
+			const { data: getTest, error: errorTest } = await supabase
+				.from('test2')
+				.select('testData')
+				.eq('qr_id', qr_reference)
+				.single();
 
+			if (errorTest) {
+				console.error('Error fetching initial testData3:', errorTest);
+			} else {
+				if (!isSwitchOn) {
+					console.log("SWITCH ON")
+					const arr = getTest.testData.filter((item) => item.owner === user.id);
+					setCart(arr);
+				}
+				else {
+					setCart(getTest.testData);
+				}
+			}
+		} catch (error) {
+			console.error('Error fetching initial data4:', error);
+		}
+	};
 
 	useFocusEffect(
 		React.useCallback(() => {
 			const fetchInitialData = async () => {
 				try {
+					const { data: { user } } = await supabase.auth.getUser();
 					const { data: getTest, error: errorTest } = await supabase
 						.from('test2')
 						.select('testData')
@@ -126,7 +162,13 @@ export default function CustomerStoreFront() {
 					if (errorTest) {
 						console.error('Error fetching initial testData3:', errorTest);
 					} else {
-						setCart(getTest.testData);
+						if (isSwitchOn) {
+							const arr = getTest.testData.filter((item) => item.owner === user.id);
+							setCart(arr);
+						}
+						else {
+							setCart(getTest.testData);
+						}
 					}
 				} catch (error) {
 					console.error('Error fetching initial data4:', error);
@@ -146,7 +188,13 @@ export default function CustomerStoreFront() {
 					},
 					(payload) => {
 
-						setCart(payload.new.testData);
+						if (isSwitchOn) {
+							const arr = payload.new.testData.filter((item) => item.owner === user.id);
+							setCart(arr);
+						}
+						else {
+							setCart(payload.new.testData);
+						}
 					}
 				)
 				.subscribe();
@@ -162,7 +210,7 @@ export default function CustomerStoreFront() {
 		await AsyncStorage.setItem("cart", JSON.stringify(cart));
 		router.push({
 			pathname: "/cart/customer",
-			params: { qr_reference: qr_reference },
+			params: { qr_reference: qr_reference, ownItems: isSwitchOn },
 		});
 
 	};
@@ -227,7 +275,43 @@ export default function CustomerStoreFront() {
 
 	return (
 		<View style={{ flex: 1, backgroundColor: "#171717" }}>
-			<HeaderComponent/>
+			<HeaderComponent showModal={showModal} />
+			<Portal>
+				<Modal
+					visible={visible}
+					onDismiss={hideModal}
+					contentContainerStyle={styles.modal}
+					presentationStyle="overFullScreen"
+				>
+					<View>
+						<View style={styles.modalHeader}>
+							<Text style={styles.modalTitle}>Settings</Text>
+
+						</View>
+
+						<View style={styles.modalBody}>
+						<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+						<Text style={{ fontWeight: 'bold' }}>Only See My Items</Text>
+	<Switch value={isSwitchOn} onValueChange={onToggleSwitch} />
+    
+</View>
+
+
+						</View>
+					</View>
+
+
+					<View style={styles.modalFooter}>
+
+						<TouchableOpacity
+							onPress={hideModal}
+							style={[styles.button, styles.createButton]}
+						>
+							<Text style={styles.buttonText}>Close</Text>
+						</TouchableOpacity>
+					</View>
+				</Modal>
+			</Portal>
 
 			<ScrollView style={{ padding: 10 }}>
 				{mockData.map((item) => (
@@ -298,3 +382,121 @@ export default function CustomerStoreFront() {
 		</View>
 	);
 }
+
+const styles = StyleSheet.create({
+	modal: {
+		justifyContent: "flex-start",
+		justifyContent: 'space-between',
+		backgroundColor: "white",
+		padding: 20,
+		alignSelf: "center",
+		width: "80%",
+
+		maxWidth: 400,
+		height: "80%",
+		borderRadius: 10,
+		marginHorizontal: 20, // Add horizontal margin
+		marginVertical: 0, // Remove or reduce the top margin
+	},
+	modalTitle: {
+		color: "black",
+		alignSelf: "center",
+		fontSize: 20,
+		fontWeight: "bold",
+	},
+	modalBody: {
+		padding: 16,
+	},
+	input: {
+		backgroundColor: "#f0f0f0",
+		borderRadius: 8,
+		height: 40,
+		paddingHorizontal: 12,
+		paddingVertical: 8,
+		marginBottom: 16,
+	},
+	optionsContainer: {
+		backgroundColor: "#f0f0f0",
+		borderRadius: 8,
+		paddingHorizontal: 12,
+		paddingVertical: 8,
+	},
+	optionPlaceholder: {
+		color: "#888",
+	},
+	modalFooter: {
+		flexDirection: "row",
+
+		justifyContent: "space-between",
+
+		borderBottomLeftRadius: 10,
+		borderBottomRightRadius: 10,
+	},
+	button: {
+		paddingHorizontal: 15,
+		paddingVertical: 12,
+		borderRadius: 8,
+		flex: 1,
+		alignContent: "center",
+	},
+	cancelButton: {
+		backgroundColor: "#ccc",
+	},
+	createButton: {
+		backgroundColor: "#F24E1E",
+	},
+
+	container: {
+		alignItems: "center",
+	},
+	prompt: {
+		fontSize: 18,
+		marginBottom: 20,
+		color: "white",
+	},
+	inputContainer: {
+		backgroundColor: "#f0f0f0",
+		borderRadius: 15,
+		paddingHorizontal: 15,
+		paddingVertical: 10,
+		marginBottom: 20,
+		width: 300,
+		height: 50,
+		justifyContent: "center",
+	},
+
+	eventButton: {
+		backgroundColor: "white",
+		paddingVertical: 12,
+		paddingHorizontal: 20,
+		borderRadius: 25,
+		height: 80,
+		width: "80%",
+		justifyContent: "center",
+		marginBottom: 15,
+	},
+	eventButtonContent: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+	addButton: {
+		backgroundColor: "black",
+		borderWidth: 2,
+		borderColor: "white",
+		paddingVertical: 12,
+		paddingHorizontal: 30,
+		color: "white",
+		borderRadius: 25,
+		height: 80,
+		width: "80%",
+		justifyContent: "center",
+		marginBottom: 10,
+	},
+	buttonText: {
+		color: "black",
+		fontSize: 30,
+		fontWeight: "bold",
+		alignSelf: "center",
+	},
+});
