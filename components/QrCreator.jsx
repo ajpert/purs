@@ -1,6 +1,7 @@
 import * as Sharing from "expo-sharing";
 import React, { useRef } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+
 import { Button } from "react-native-paper";
 import QRCode from "react-native-qrcode-svg";
 import ViewShot from "react-native-view-shot";
@@ -24,9 +25,12 @@ export default function QrCreator(props) {
 	return (
 		<>
 			<View>
-				<Button mode="text" onPress={printToPDF}>
-					<Text className="text-black underline">Print QR Code</Text>
+			<TouchableOpacity onPress={printToPDF}>
+			<Button mode="text" onPress={printToPDF}>
+					Print QR!
 				</Button>
+			
+
 				<ViewShot
 					style={{ transform: [{ scale: 1.5 }] }}
 					ref={viewShotRef}
@@ -40,6 +44,7 @@ export default function QrCreator(props) {
 						/>
 					</View>
 				</ViewShot>
+				</TouchableOpacity>
 			</View>
 		</>
 	);
