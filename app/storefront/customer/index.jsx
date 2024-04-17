@@ -117,7 +117,10 @@ export default function CustomerStoreFront() {
 
 	const [isSwitchOn, setIsSwitchOn] = React.useState(false);
 
-	const onToggleSwitch = () => { fetchData(); setIsSwitchOn(!isSwitchOn)};
+	const onToggleSwitch = async () => { 
+		await fetchData(); 
+		setIsSwitchOn(!isSwitchOn)
+	};
 
 	//const temp = useSupabaseChannel("test2", qr_reference)
 
@@ -147,7 +150,7 @@ export default function CustomerStoreFront() {
 			console.error('Error fetching initial data4:', error);
 		}
 	};
-
+console.log("IS THE SWITCH ON" , isSwitchOn)
 	useFocusEffect(
 		React.useCallback(() => {
 			const fetchInitialData = async () => {
@@ -189,10 +192,12 @@ export default function CustomerStoreFront() {
 					(payload) => {
 
 						if (isSwitchOn) {
+							console.log("STORE FRONT SWITCH ON")
 							const arr = payload.new.testData.filter((item) => item.owner === user.id);
 							setCart(arr);
 						}
 						else {
+							console.log("STORE FRONT SWITCH OFF")
 							setCart(payload.new.testData);
 						}
 					}
