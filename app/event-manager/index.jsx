@@ -114,7 +114,7 @@ const EventManager = (props) => {
 				.insert({ name: eventName, phone_number: "12392855148", cart_id: generateQrData })
 				.eq("merchant_id", user.id);
 			getEvents();
-			console.log(data)
+	
 			if (error) {
 				throw error;
 			}
@@ -211,7 +211,12 @@ const EventManager = (props) => {
 		
 		)();
 	}, []);
-
+console.log("HERE")
+useFocusEffect(
+	React.useCallback(() => {
+		getEvents();
+	}, [])
+)
 	useFocusEffect(
 		React.useCallback(() => {
 
@@ -405,7 +410,7 @@ const EventManager = (props) => {
 															fontSize: 15,
 														}}
 													>
-														{event.cart.length}
+														Items in cart: {event.cart.length}
 													</Text>
 												</View>
 
