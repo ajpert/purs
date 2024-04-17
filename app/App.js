@@ -12,17 +12,6 @@ export default function App() {
   const [sentCode, setSentCode] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const { data: userData, error: userError } =
-        await supabase.auth.getUser();
-
-      // Handle the fetched data and error here
-      console.log(userData);
-      console.log(userError);
-    };
-
-    fetchData();
-
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });

@@ -68,7 +68,7 @@ export default function App() {
 	}
 
 	return (
-		<View style={styles.container}>
+		<View style={styles.container} className="py-24">
 			{isCameraMounted ? (
 				<CameraView
 					barcodeScannerSettings={{
@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		backgroundColor: "black",
 		color: "white",
+		height: "100%",
 	},
 	camera: {
 		width: "100%",

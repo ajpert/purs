@@ -54,10 +54,10 @@ const ChoiceScreen = () => {
   };
 
   return (
-    <View className="flex flex-col items-center h-full my-8">
+    <View className="flex flex-col items-center my-32">
       <View className="self-stretch ml-8 mr-8 mt-6">
-        <Text className="text-white text-5xl text-left mx-auto">
-          What team suits you?
+        <Text className="text-white text-4xl text-left mx-auto">
+          Which best fits you?
         </Text>
       </View>
 

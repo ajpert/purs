@@ -1,20 +1,30 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect, useNavigation, useRouter } from "expo-router";
-import React, { useState, useEffect, useContext } from "react";
-import { ScrollView, View, StyleSheet, TouchableOpacity, Text } from "react-native";
-import { Header } from "react-native-elements";
-import { Button, Card, Paragraph, Title, Appbar, Portal, Modal, Switch } from "react-native-paper";
+import React, { useContext, useEffect, useState } from "react";
+import {
+	ScrollView,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
+import {
+	Appbar,
+	Button,
+	Card,
+	Modal,
+	Paragraph,
+	Portal,
+	Switch,
+	Title,
+} from "react-native-paper";
 
-import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams } from "expo-router";
+import { supabase } from "../../../lib/supabase";
 
-import { useAuth } from "../../../hooks/useAuth";
-import { useSupabaseChannel } from "../../../hooks/useSupabaseChannel";
 import { RoleContext } from "../../../context/RoleContext";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 function HeaderComponent(props) {
-
 	const navigation = useNavigation();
 	const router = useRouter();
 	const [isNavigationReady, setIsNavigationReady] = useState(false);
@@ -43,19 +53,18 @@ function HeaderComponent(props) {
 
 			<Appbar.Content
 				title="Store Front"
-				titleStyle={{ color: "white", fontSize: 30 }}
+				titleStyle={{ color: "white", fontSize: 20 }}
 			/>
 			<Appbar.Action
 				icon="cog"
 				color={"white"}
 				onPress={() => {
-					props.showModal()
+					props.showModal();
 				}}
 			/>
 		</Appbar.Header>
 	);
 }
-
 
 const randomUUID = () => {
 	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -68,47 +77,49 @@ const randomUUID = () => {
 const mockData = [
 	{
 		id: randomUUID(),
-		name: "Bacon",
-		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=1",
+		name: "Playstation 5",
+		description: "The best gaming console you can buy.",
+		imageUrl:
+			"https://www.ps5playstation.com/wp-content/uploads/2020/09/ps5-1.png",
 	},
 	{
 		id: randomUUID(),
-		name: "Bacon",
-		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=2",
+		name: "Dell XPS 13",
+		description: "A powerful laptop for work and play.",
+		imageUrl:
+			"https://www.dell.com/learn/us/en/uscorp1/campaigns/xps-13-9300-laptop/xps-13-9300-laptop-hero-504x350.jpg",
 	},
 	{
 		id: randomUUID(),
-		name: "Bacon",
-		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=3",
+		name: "Canon EOS R5",
+		description: "A professional camera for photographers.",
+		imageUrl:
+			"https://www.canon.co.uk/media/canon-eos-r5-5-6-8k-video-photography-camera_tcm14-1710324.png",
 	},
 	{
 		id: randomUUID(),
-		name: "Bacon",
-		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=4",
+		name: "DJI Mavic Air 2",
+		description: "A compact drone for aerial photography.",
+		imageUrl: "https://www.dji.com/sg/mini2",
 	},
 	{
 		id: randomUUID(),
-		name: "Bacon",
-		description: "The best bacon in town.",
-		imageUrl: "http://placebacon.net/400/300?image=5",
+		name: "Samsung Galaxy S21",
+		description: "The latest smartphone from Samsung.",
+		imageUrl: "https://www.samsung.com/sg/smartphones/galaxy-s21-5g/",
 	},
 ];
 
 export default function CustomerStoreFront() {
 	const { role } = useContext(RoleContext);
-	console.log("ROLE", role)
-	const { qr_reference } = useLocalSearchParams()
+	console.log("ROLE", role);
+	const { qr_reference } = useLocalSearchParams();
 
 	const [session, setSession] = useState(null);
 
 	const [data, setData] = useState(null);
 
 	const [cart, setCart] = useState([]);
-
 
 	const [visible, setVisible] = useState(false);
 
@@ -117,9 +128,9 @@ export default function CustomerStoreFront() {
 
 	const [isSwitchOn, setIsSwitchOn] = React.useState(false);
 
-	const onToggleSwitch = async () => { 
-		await fetchData(); 
-		setIsSwitchOn(!isSwitchOn)
+	const onToggleSwitch = async () => {
+		await fetchData();
+		setIsSwitchOn(!isSwitchOn);
 	};
 
 	//const temp = useSupabaseChannel("test2", qr_reference)
@@ -127,54 +138,66 @@ export default function CustomerStoreFront() {
 	//console.log("TEMP", temp.length)
 	const fetchData = async () => {
 		try {
-			const { data: { user } } = await supabase.auth.getUser();
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
 			const { data: getTest, error: errorTest } = await supabase
-				.from('test2')
-				.select('testData')
-				.eq('qr_id', qr_reference)
+				.from("test2")
+				.select("testData")
+				.eq("qr_id", qr_reference)
 				.single();
 
 			if (errorTest) {
-				console.error('Error fetching initial testData3:', errorTest);
+				console.error("Error fetching initial testData3:", errorTest);
 			} else {
 				if (!isSwitchOn) {
-					console.log("SWITCH ON")
-					const arr = getTest.testData.filter((item) => item.owner === user.id);
+					console.log("SWITCH ON");
+					const arr = getTest.testData.filter(
+						(item) => item.owner === user.id
+					);
 					setCart(arr);
-				}
-				else {
+				} else {
 					setCart(getTest.testData);
 				}
 			}
 		} catch (error) {
-			console.error('Error fetching initial data4:', error);
+			console.error("Error fetching initial data4:", error);
 		}
 	};
-console.log("IS THE SWITCH ON" , isSwitchOn)
+	console.log("IS THE SWITCH ON", isSwitchOn);
 	useFocusEffect(
 		React.useCallback(() => {
 			const fetchInitialData = async () => {
 				try {
-					const { data: { user } } = await supabase.auth.getUser();
-					const { data: getTest, error: errorTest } = await supabase
-						.from('test2')
-						.select('testData')
-						.eq('qr_id', qr_reference)
+					const {
+						data: { user },
+					} = await supabase.auth.getUser();
+					const {
+						data: getTest,
+						error: errorTest,
+					} = await supabase
+						.from("test2")
+						.select("testData")
+						.eq("qr_id", qr_reference)
 						.single();
 
 					if (errorTest) {
-						console.error('Error fetching initial testData3:', errorTest);
+						console.error(
+							"Error fetching initial testData3:",
+							errorTest
+						);
 					} else {
 						if (isSwitchOn) {
-							const arr = getTest.testData.filter((item) => item.owner === user.id);
+							const arr = getTest.testData.filter(
+								(item) => item.owner === user.id
+							);
 							setCart(arr);
-						}
-						else {
+						} else {
 							setCart(getTest.testData);
 						}
 					}
 				} catch (error) {
-					console.error('Error fetching initial data4:', error);
+					console.error("Error fetching initial data4:", error);
 				}
 			};
 
@@ -186,18 +209,18 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 					{
 						event: "*",
 						schema: "public",
-						table: 'test2',
+						table: "test2",
 						filter: `qr_id=eq.${qr_reference}`,
 					},
 					(payload) => {
-
 						if (isSwitchOn) {
-							console.log("STORE FRONT SWITCH ON")
-							const arr = payload.new.testData.filter((item) => item.owner === user.id);
+							console.log("STORE FRONT SWITCH ON");
+							const arr = payload.new.testData.filter(
+								(item) => item.owner === user.id
+							);
 							setCart(arr);
-						}
-						else {
-							console.log("STORE FRONT SWITCH OFF")
+						} else {
+							console.log("STORE FRONT SWITCH OFF");
 							setCart(payload.new.testData);
 						}
 					}
@@ -206,10 +229,9 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 
 			return () => {
 				channel.unsubscribe();
-			}
+			};
 		}, [])
-	)
-
+	);
 
 	const handlePress = async () => {
 		await AsyncStorage.setItem("cart", JSON.stringify(cart));
@@ -217,65 +239,60 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 			pathname: "/cart/customer",
 			params: { qr_reference: qr_reference, ownItems: isSwitchOn },
 		});
-
 	};
 
 	const handleAddToCart = async (item) => {
-		const { data: { user } } = await supabase.auth.getUser()
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
 		try {
 			// Fetch the existing testData from the database
 			const { data: getTest, error: errorTest } = await supabase
-				.from('test2')
-				.select('testData')
-				.eq('qr_id', qr_reference)
+				.from("test2")
+				.select("testData")
+				.eq("qr_id", qr_reference)
 				.single();
 
 			if (errorTest) {
-				console.error('Error fetching testData5:', errorTest);
+				console.error("Error fetching testData5:", errorTest);
 				return;
 			}
 
 			// Create a new item to be added
 			const newItem = {
 				id: randomUUID(),
-				name: 'Bacon',
-				description: 'The best bacon in town.',
-				imageUrl: 'http://placebacon.net/400/300?image=1',
+				name: "Bacon",
+				description: "The best bacon in town.",
+				imageUrl: "http://placebacon.net/400/300?image=1",
 			};
 			item.id = randomUUID();
 
 			if (role === "Customer") {
 				item.owner = user.id;
+			} else {
+				console.log("ADDING FROM MERCHANT");
+				item.owner = "";
 			}
-			else {
-				console.log("ADDING FROM MERCHANT")
-				item.owner = ""
-			}
-
 
 			// Combine the existing testData with the new item
 			const newData = [...getTest.testData, item];
 
 			// Update the testData in the database
 			const { data, error } = await supabase
-				.from('test2')
+				.from("test2")
 				.update({ testData: newData })
-				.eq('qr_id', qr_reference)
+				.eq("qr_id", qr_reference)
 				.select();
 
 			if (error) {
-				console.error('Error updating testData:', error);
+				console.error("Error updating testData:", error);
 				return;
 			}
 
-
-
 			// Update the local cart state
-
 		} catch (error) {
-			console.error('Error handling AddToCart:', error);
+			console.error("Error handling AddToCart:", error);
 		}
-
 	};
 
 	return (
@@ -291,23 +308,28 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 					<View>
 						<View style={styles.modalHeader}>
 							<Text style={styles.modalTitle}>Settings</Text>
-
 						</View>
 
 						<View style={styles.modalBody}>
-						<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-						<Text style={{ fontWeight: 'bold' }}>Only See My Items</Text>
-	<Switch value={isSwitchOn} onValueChange={onToggleSwitch} />
-    
-</View>
-
-
+							<View
+								style={{
+									flexDirection: "row",
+									justifyContent: "space-between",
+									alignItems: "center",
+								}}
+							>
+								<Text style={{ fontWeight: "bold" }}>
+									Only See My Items
+								</Text>
+								<Switch
+									value={isSwitchOn}
+									onValueChange={onToggleSwitch}
+								/>
+							</View>
 						</View>
 					</View>
 
-
 					<View style={styles.modalFooter}>
-
 						<TouchableOpacity
 							onPress={hideModal}
 							style={[styles.button, styles.createButton]}
@@ -318,7 +340,7 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 				</Modal>
 			</Portal>
 
-			<ScrollView style={{ padding: 10 }}>
+			<ScrollView>
 				{mockData.map((item) => (
 					<Card
 						key={item.id}
@@ -350,7 +372,7 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 							style={{ objectFit: "cover", height: 100 }}
 						/>
 						<Button
-							mode="contained"
+							mode="outlined"
 							style={{
 								margin: 10,
 								borderRadius: 10,
@@ -363,24 +385,8 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 					</Card>
 				))}
 			</ScrollView>
-			<Card
-				style={{
-					margin: 20,
-					padding: 10,
-					borderRadius: 10,
-				}}
-			>
-				<Button
-					style={{
-						position: "fixed",
-						bottom: 0,
-						width: "100%",
-						padding: 10,
-						borderRadius: 0,
-					}}
-					onPress={handlePress}
-					icon={"cart"}
-				>
+			<Card className="w-1/4 p-10 bg-gray-800">
+				<Button onPress={handlePress} icon={"cart"}>
 					View Cart ({cart?.length})
 				</Button>
 			</Card>
@@ -391,7 +397,7 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 const styles = StyleSheet.create({
 	modal: {
 		justifyContent: "flex-start",
-		justifyContent: 'space-between',
+		justifyContent: "space-between",
 		backgroundColor: "white",
 		padding: 20,
 		alignSelf: "center",
