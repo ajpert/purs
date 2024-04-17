@@ -43,17 +43,21 @@ export default function OTPVerify({ phone }) {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.header}>Verify your phone number</Text>
+			<Text style={styles.header}>Let's get you verified ✅ </Text>
 			<View style={[styles.verticallySpaced, styles.mt20]}>
 				<Input
-					label="OTP"
-					leftIcon={{ type: "font-awesome", name: "lock" }}
+					label="OTP 🔐"
+					labelStyle={{ color: "white", fontSize: 26 }}
+					placeholder="Enter your Verfication Code"
+					placeholderTextColor="grey"
+					inputStyle={{ color: "white", fontSize: 16 }}
+					leftIcon={{ type: "font-awesome", name: "lock", color: "white"}}
 					value={otp}
 					keyboardType="number-pad"
 					onChangeText={setOtp}
 				/>
 			</View>
-			<View style={[styles.verticallySpaced, styles.mt20]}>
+			<View style={[styles.verticallySpaced, styles.mt20, { marginTop: 0, justifyContent: 'center', marginBottom: 320}]}>
 				<Button title="Verify" onPress={verifyOtp} disabled={loading} />
 			</View>
 		</View>
@@ -71,12 +75,14 @@ const styles = StyleSheet.create({
 		alignSelf: "stretch",
 	},
 	mt20: {
-		marginTop: 20,
+		marginTop: 340,
+
 	},
 	header: {
 		fontSize: 24,
 		fontWeight: "bold",
 		marginBottom: 20,
 		textAlign: "center",
+		color: "white",
 	},
 });
