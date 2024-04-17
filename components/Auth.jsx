@@ -52,7 +52,7 @@ export default function Auth({ phone, setPhone, setSentCode }) {
 					onChangeText={setPhone}
 				/>
 			</View>
-			<View style={[styles.verticallySpaced, styles.mt20, { marginTop: 0, justifyContent: 'center', marginBottom: 320}]}>
+			<View style={[styles.verticallySpaced, styles.mt20]}>
     <Button
         title="Sign In"
         onPress={signInWithPhone}
@@ -62,12 +62,10 @@ export default function Auth({ phone, setPhone, setSentCode }) {
 		</View>
 	);
 }
-
 const styles = StyleSheet.create({
 	container: {
 		marginTop: 40,
 		padding: 12,
-		backgroundColor: "black",
 	},
 	verticallySpaced: {
 		paddingTop: 4,
@@ -75,13 +73,14 @@ const styles = StyleSheet.create({
 		alignSelf: "stretch",
 	},
 	mt20: {
-		marginTop: 340,
+		
 	},
 	header: {
-		fontSize: 35,
+		fontSize: 24,
 		fontWeight: "bold",
 		marginBottom: 20,
 		textAlign: "center",
 		color: "white",
+		
 	},
 });

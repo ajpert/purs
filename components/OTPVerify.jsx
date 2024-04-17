@@ -37,7 +37,7 @@ export default function OTPVerify({ phone }) {
 			Alert.alert(error.message);
 		} else {
 			setLoading(false);
-			    router.push("/ChoiceScreen");
+			    router.replace("/ChoiceScreen");
 		}
 	}
 
@@ -57,7 +57,7 @@ export default function OTPVerify({ phone }) {
 					onChangeText={setOtp}
 				/>
 			</View>
-			<View style={[styles.verticallySpaced, styles.mt20, { marginTop: 0, justifyContent: 'center', marginBottom: 320}]}>
+			<View style={[styles.verticallySpaced, styles.mt20]}>
 				<Button title="Verify" onPress={verifyOtp} disabled={loading} />
 			</View>
 		</View>
@@ -75,8 +75,7 @@ const styles = StyleSheet.create({
 		alignSelf: "stretch",
 	},
 	mt20: {
-		marginTop: 340,
-
+		
 	},
 	header: {
 		fontSize: 24,
@@ -86,3 +85,4 @@ const styles = StyleSheet.create({
 		color: "white",
 	},
 });
+
