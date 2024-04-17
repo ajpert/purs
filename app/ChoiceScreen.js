@@ -90,7 +90,7 @@ const ChoiceScreen = () => {
 
   return (
     <><TouchableOpacity
-      style={{ position: 'absolute', top: 40, right: 20, backgroundColor: 'red', padding: 10, borderRadius: 10}}
+      style={{ position: 'absolute', top: 40, right: 20, backgroundColor: 'red', padding: 10, borderRadius: 10 }}
       onPress={handleLogOut}
     >
       <Text className="text-white text-xl">Log Out</Text>
@@ -112,7 +112,8 @@ const ChoiceScreen = () => {
                 {
                   "bg-orange-400": item.role === "Merchant",
                   "bg-blue-400": item.role === "Customer",
-                  "bg-green-400": userData.connected && item.role === "Bank",
+                  "bg-white": !userData.connected && item.role === "Bank", // If bank is not connected, set background to white
+                  "bg-green-400": userData.connected && item.role === "Bank", // If bank is connected, set background to green
                 }
               )}
               onPress={() => handleRoleSelection(item.role)}
@@ -122,8 +123,10 @@ const ChoiceScreen = () => {
                 className="w-12 h-12 ml-4 mr-2 flex-1 lg:hidden" />
               <View className="flex flex-col ml-2 w-4/6 lg:mx-auto">
                 <Text className="text-2xl lg:text-center font-medium">
-                  {userData?.connected && item.role === "Bank"
-                    ? "Bank Connected"
+                  {item.role === "Bank"
+                    ? userData.connected
+                      ? "Bank Connected"
+                      : "Connect to Bank"
                     : item.role}
                 </Text>
                 <Text className="text-sm font-light lg:text-center">
@@ -143,7 +146,9 @@ const ChoiceScreen = () => {
           onClose={() => {
             setModalVisible(false);
             setConnected(true);
-          } } />
+          }}
+          setUserData={setUserData}
+        />
         <Text className="text-white text-2xl text-center mt-8">
           This helps us give you the best experience on Polaris.
         </Text>
@@ -319,7 +324,7 @@ const ChoiceScreen = () => {
 };
 */
 
-const BankConnectionModal = ({ visible, onClose }) => {
+const BankConnectionModal = ({ visible, onClose, setUserData }) => {
   const setBank = async () => {
     const {
       data: { user },
@@ -327,12 +332,22 @@ const BankConnectionModal = ({ visible, onClose }) => {
     const { data, error } = await supabase
       .from("user_profiles")
       .update({ connected: true })
-      .eq("id", user.id);
-    onClose();
+      .eq("id", user.id)
+      .select();
+
+    if (error) {
+      console.error("Error updating user profile:", error);
+    } else {
+      const updatedUserData = data[0];
+      onClose();
+      setUserData(updatedUserData);
+    }
   };
+
   const [accountNumber, setAccountNumber] = useState("");
   const [routingNumber, setRoutingNumber] = useState("");
   const [accountHolderName, setAccountHolderName] = useState("");
+
   return (
     <Modal
       animationType="slide"
