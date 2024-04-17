@@ -1,13 +1,10 @@
+import { Redirect } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import "react-native-url-polyfill/auto";
 import Auth from "../components/Auth.jsx";
 import OTPVerify from "../components/OTPVerify.jsx";
 import { supabase } from "../lib/supabase.js";
-import { Redirect } from "expo-router";
-
-import { useAuth } from "../hooks/useAuth.js";
-import { AuthProvider } from "../context/AuthContext.js";
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -40,7 +37,7 @@ export default function App() {
     return <Redirect href={"ChoiceScreen"} />;
   }
   return (
-    <View style={{backgroundColor: 'black'}}>
+    <View style={{ backgroundColor: "black" }}>
       {sentCode ? (
         <OTPVerify phone={phone} />
       ) : (
