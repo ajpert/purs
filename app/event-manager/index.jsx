@@ -175,7 +175,7 @@ const EventManager = (props) => {
 			data.map(async (event) => {
 			  const { data: cartData, error: cartError } = await supabase
 				.from("test2")
-				.select("testData")
+				.select("*")
 				.eq("qr_id", event.cart_id)
 				.single();
 	  
@@ -183,10 +183,12 @@ const EventManager = (props) => {
 				console.error("Error fetching cart data:", cartError);
 				return event;
 			  }
+			  console.log("CART DATA beep bop", cartData.pending_orders)
 	  
 			  return {
 				...event,
 				cart: cartData.testData,
+				pending_orders: cartData.pending_orders,
 			  };
 			})
 		  );
@@ -411,6 +413,14 @@ useFocusEffect(
 														}}
 													>
 														Items in cart: {event.cart.length}
+													</Text>
+													<Text
+														style={{
+															color: "black",
+															fontSize: 15,
+														}}
+													>
+														pending_orders: {event.pending_orders.length}
 													</Text>
 												</View>
 
