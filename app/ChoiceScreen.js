@@ -11,6 +11,8 @@ import {
   View,
 } from "react-native";
 import { cn } from "../lib/utils.js";
+import { supabase } from "../lib/supabase";
+import { RoleContext } from "../context/RoleContext";
 
 const data = [
   {
@@ -38,9 +40,6 @@ const logos = {
   Arrow: require("../assets/arrow-1.png"),
 };
 
-import { RoleContext } from "../context/RoleContext";
-import { supabase } from "../lib/supabase";
-
 const ChoiceScreen = () => {
   const { setRole } = useContext(RoleContext);
   const [user, setUser] = useState(null);
@@ -64,6 +63,11 @@ const ChoiceScreen = () => {
     fetchUser();
   }, []);
 
+  const handleLogOut = async () => {
+    await supabase.auth.signOut();
+    router.replace("/"); // Redirect to the home screen or login screen
+  };
+
   handleRoleSelection = (role) => {
     setRole(role);
     console.log(role);
@@ -85,65 +89,67 @@ const ChoiceScreen = () => {
   }
 
   return (
-    <View className="flex flex-col items-center justify-center h-1/2 my-auto">
-      <View className="self-stretch ml-8 mr-8 mt-6">
-        <Text className="text-white text-4xl text-left mx-auto">
-          Which best fits you?
-        </Text>
-      </View>
+    <><TouchableOpacity
+      style={{ position: 'absolute', top: 40, right: 20, backgroundColor: 'red', padding: 10, borderRadius: 10}}
+      onPress={handleLogOut}
+    >
+      <Text className="text-white text-xl">Log Out</Text>
+    </TouchableOpacity><View className="flex flex-col items-center justify-center h-1/2 my-auto">
 
-      <View className="flex flex-col items-center mt-8">
-        {data.map((item) => (
-          <TouchableOpacity
-            key={item.role}
-            className={cn(
-              `flex flex-row justify-between items-center mb-4 w-96 h-24 rounded-3xl`,
-              {
-                "bg-orange-400": item.role === "Merchant",
-                "bg-blue-400": item.role === "Customer",
-                // if connected, change color to green
-                "bg-green-400": userData.connected && item.role === "Bank",
-              }
-            )}
-            onPress={() => handleRoleSelection(item.role)}
-          >
-            <Image
-              source={item.icon}
-              className="w-12 h-12 ml-4 mr-2 flex-1 lg:hidden" //holy hack "flex-1"
-            />
-            <View className="flex flex-col ml-2 w-4/6 lg:mx-auto">
-              <Text className="text-2xl lg:text-center font-medium">
-                {userData?.connected && item.role === "Bank"
-                  ? "Bank Connected"
-                  : item.role}
-              </Text>
-              <Text className="text-sm font-light lg:text-center">
-                {item.description}
-              </Text>
-            </View>
-            <View className="flex-1 flex flex-row w-min lg:hidden">
+        <View className="flex flex-row justify-between self-stretch ml-8 mr-8 mt-6">
+          <Text className="text-white text-4xl text-left mx-auto">
+            Which best fits you?
+          </Text>
+
+        </View>
+
+        <View className="flex flex-col items-center mt-8">
+          {data.map((item) => (
+            <TouchableOpacity
+              key={item.role}
+              className={cn(
+                `flex flex-row justify-between items-center mb-4 w-96 h-24 rounded-3xl`,
+                {
+                  "bg-orange-400": item.role === "Merchant",
+                  "bg-blue-400": item.role === "Customer",
+                  "bg-green-400": userData.connected && item.role === "Bank",
+                }
+              )}
+              onPress={() => handleRoleSelection(item.role)}
+            >
               <Image
-                source={logos.Arrow}
-                className="w-10 h-10 flex-grow-0 lg:flex-1"
-              />
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <BankConnectionModal
-        visible={modalVisible}
-        onClose={() => {
-          setModalVisible(false);
-          setConnected(true);
-        }}
-      />
-      <Text className="text-white text-2xl text-center mt-8">
-        This helps us give you the best experience on Polaris.
-      </Text>
-    </View>
+                source={item.icon}
+                className="w-12 h-12 ml-4 mr-2 flex-1 lg:hidden" />
+              <View className="flex flex-col ml-2 w-4/6 lg:mx-auto">
+                <Text className="text-2xl lg:text-center font-medium">
+                  {userData?.connected && item.role === "Bank"
+                    ? "Bank Connected"
+                    : item.role}
+                </Text>
+                <Text className="text-sm font-light lg:text-center">
+                  {item.description}
+                </Text>
+              </View>
+              <View className="flex-1 flex flex-row w-min lg:hidden">
+                <Image
+                  source={logos.Arrow}
+                  className="w-10 h-10 flex-grow-0 lg:flex-1" />
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <BankConnectionModal
+          visible={modalVisible}
+          onClose={() => {
+            setModalVisible(false);
+            setConnected(true);
+          } } />
+        <Text className="text-white text-2xl text-center mt-8">
+          This helps us give you the best experience on Polaris.
+        </Text>
+      </View></>
   );
 };
-
 /*
 
 const BankConnectionModal = ({ visible, onClose }) => {
