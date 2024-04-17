@@ -40,7 +40,7 @@ export default function App() {
     return <Redirect href={"ChoiceScreen"} />;
   }
   return (
-    <View>
+    <View style={{backgroundColor: 'black'}}>
       {sentCode ? (
         <OTPVerify phone={phone} />
       ) : (
@@ -59,5 +59,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginTop: 20,
+    color: "white",
   },
 });

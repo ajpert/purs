@@ -12,10 +12,9 @@ const ChoiceScreen = () => {
 
     const handleSubmit = () => {
         // Handle phone number submission logic here
-        console.log('Phone Number:', phoneNumber);
-        
+        console.log('Phone Number:', phoneNumber);  
     };
-
+    
     handleRoleSelection = (role) => {
         setRole(role);
         console.log(role);
