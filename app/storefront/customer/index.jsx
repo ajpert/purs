@@ -1,20 +1,38 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect, useNavigation, useRouter } from "expo-router";
+import React, { useContext, useEffect, useState } from "react";
+import {
+	ScrollView,
+	StyleSheet,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
+} from "react-native";
+import {
+	Appbar,
+	Button,
+	Card,
+	Modal,
+	Paragraph,
+	Portal,
+	Switch,
+	Title,
+} from "react-native-paper";
+
+/*
 import React, { useState, useEffect, useContext } from "react";
 import { ScrollView, View, StyleSheet, TouchableOpacity, Text } from "react-native";
 import { Header } from "react-native-elements";
 import { Button, Card, Paragraph, Title, Appbar, Portal, Modal, Switch, TextInput } from "react-native-paper";
+*/
 
-import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams } from "expo-router";
+import { supabase } from "../../../lib/supabase";
 
-import { useAuth } from "../../../hooks/useAuth";
-import { useSupabaseChannel } from "../../../hooks/useSupabaseChannel";
 import { RoleContext } from "../../../context/RoleContext";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 function HeaderComponent(props) {
-
 	const navigation = useNavigation();
 	const router = useRouter();
 	const [isNavigationReady, setIsNavigationReady] = useState(false);
@@ -43,19 +61,18 @@ function HeaderComponent(props) {
 
 			<Appbar.Content
 				title="Store Front"
-				titleStyle={{ color: "white", fontSize: 30 }}
+				titleStyle={{ color: "white", fontSize: 20 }}
 			/>
 			<Appbar.Action
 				icon="cog"
 				color={"white"}
 				onPress={() => {
-					props.showModal()
+					props.showModal();
 				}}
 			/>
 		</Appbar.Header>
 	);
 }
-
 
 const randomUUID = () => {
 	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -103,102 +120,106 @@ const mockData = [
 	},
 ];
 const MoneyCard = ({ handleAddToCart }) => {
+	const [memo, setMemo] = useState("");
 
-	const [memo, setMemo] = useState('');
-  
-	const [amount, setAmount] = useState('');
+	const [amount, setAmount] = useState("");
 
 	const handleAmountChange = (text) => {
-	  setAmount(text);
+		setAmount(text);
 	};
-  
+
 	const handleMemoChange = (text) => {
-	  setMemo(text);
+		setMemo(text);
 	};
-  
+
 	const handleAddMoney = () => {
 		const numericAmount = parseFloat(amount);
-	  
+
 		if (!isNaN(numericAmount) && numericAmount > 0) {
-		  const item = {
-			id: randomUUID(),
-			name: `Sending`,
-			description: `Note: ${memo}`,
-			cost: numericAmount,
-		  };
-	  
-		  handleAddToCart(item);
-		  setAmount('');
-		  setMemo('');
+			const item = {
+				id: randomUUID(),
+				name: `Sending`,
+				description: `Note: ${memo}`,
+				cost: numericAmount,
+			};
+
+			handleAddToCart(item);
+			setAmount("");
+			setMemo("");
 		}
-	  };
-  
+	};
+
 	return (
-	  <Card
-		key="money"
-		style={{
-		  margin: 5,
-		  padding: 10,
-		  borderRadius: 10,
-		  backgroundColor: '#262626',
-		  position: 'relative',
-		}}
-	  >
-		<Card.Content
-		  style={{
-			position: 'absolute',
-			zIndex: 1,
-			backgroundColor: 'rgba(0,0,0,0.5)',
-			borderRadius: 10,
-			padding: 10,
-			width: '100%',
-		  }}
+		<Card
+			key="money"
+			style={{
+				margin: 5,
+				padding: 10,
+				borderRadius: 10,
+				backgroundColor: "#262626",
+				position: "relative",
+			}}
 		>
-		  <Title style={{ color: '#fff' }}>Send Money</Title>
-		  <Paragraph style={{ color: '#fff' }}>
-			Enter an amount and an optional memo
-		  </Paragraph>
-		</Card.Content>
-		<Card.Cover  style={{ objectFit: 'cover', height: 100, backgroundColor: 'green' }} />
-		<TextInput
-		  style={styles.input}
-		  placeholder="Enter amount"
-		  keyboardType="numeric"
-		  value={amount.toString()}
-		  onChangeText={handleAmountChange}
-		/>
-		<TextInput
-		  style={styles.input}
-		  placeholder="Enter memo (optional)"
-		  value={memo}
-		  onChangeText={handleMemoChange}
-		/>
-		<Button
-		  mode="contained"
-		  style={{
-			margin: 10,
-			borderRadius: 10,
-			backgroundColor: '#3f3f46',
-		  }}
-		  onPress={handleAddMoney}
-		>
-		  Add Money
-		</Button>
-	  </Card>
+			<Card.Content
+				style={{
+					position: "absolute",
+					zIndex: 1,
+					backgroundColor: "rgba(0,0,0,0.5)",
+					borderRadius: 10,
+					padding: 10,
+					width: "100%",
+				}}
+			>
+				<Title style={{ color: "#fff" }}>Send Money</Title>
+				<Paragraph style={{ color: "#fff" }}>
+					Enter an amount and an optional memo
+				</Paragraph>
+			</Card.Content>
+			<Card.Cover
+				style={{
+					objectFit: "cover",
+					height: 100,
+					backgroundColor: "green",
+				}}
+			/>
+			<TextInput
+				style={styles.input}
+				placeholder="Enter amount"
+				keyboardType="numeric"
+				value={amount.toString()}
+				onChangeText={handleAmountChange}
+			/>
+			<TextInput
+				style={styles.input}
+				placeholder="Enter memo (optional)"
+				value={memo}
+				onChangeText={handleMemoChange}
+			/>
+			<Button
+				mode="contained"
+				style={{
+					margin: 10,
+					borderRadius: 10,
+					backgroundColor: "#3f3f46",
+				}}
+				onPress={handleAddMoney}
+			>
+				Add Money
+			</Button>
+		</Card>
 	);
-  };
+};
 
 export default function CustomerStoreFront() {
 	const { role } = useContext(RoleContext);
-	console.log("ROLE", role)
-	const { qr_reference } = useLocalSearchParams()
+	console.log("ROLE", role);
+	const { qr_reference } = useLocalSearchParams();
 
 	const [session, setSession] = useState(null);
 
 	const [data, setData] = useState(null);
 
 	const [cart, setCart] = useState([]);
-
 
 	const [visible, setVisible] = useState(false);
 
@@ -207,64 +228,76 @@ export default function CustomerStoreFront() {
 
 	const [isSwitchOn, setIsSwitchOn] = React.useState(false);
 
-	const onToggleSwitch = async () => { 
-		await fetchData(); 
-		setIsSwitchOn(!isSwitchOn)
-	}
+	const onToggleSwitch = async () => {
+		await fetchData();
+		setIsSwitchOn(!isSwitchOn);
+	};
 
 	//const temp = useSupabaseChannel("test2", qr_reference)
 
 	//console.log("TEMP", temp.length)
 	const fetchData = async () => {
 		try {
-			const { data: { user } } = await supabase.auth.getUser();
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
 			const { data: getTest, error: errorTest } = await supabase
-				.from('test2')
-				.select('testData')
-				.eq('qr_id', qr_reference)
+				.from("test2")
+				.select("testData")
+				.eq("qr_id", qr_reference)
 				.single();
 
 			if (errorTest) {
-				console.error('Error fetching initial testData3:', errorTest);
+				console.error("Error fetching initial testData3:", errorTest);
 			} else {
 				if (!isSwitchOn) {
-					console.log("SWITCH ON")
-					const arr = getTest.testData.filter((item) => item.owner === user.id);
+					console.log("SWITCH ON");
+					const arr = getTest.testData.filter(
+						(item) => item.owner === user.id
+					);
 					setCart(arr);
-				}
-				else {
+				} else {
 					setCart(getTest.testData);
 				}
 			}
 		} catch (error) {
-			console.error('Error fetching initial data4:', error);
+			console.error("Error fetching initial data4:", error);
 		}
 	};
-console.log("IS THE SWITCH ON" , isSwitchOn)
+	console.log("IS THE SWITCH ON", isSwitchOn);
 	useFocusEffect(
 		React.useCallback(() => {
 			const fetchInitialData = async () => {
 				try {
-					const { data: { user } } = await supabase.auth.getUser();
-					const { data: getTest, error: errorTest } = await supabase
-						.from('test2')
-						.select('testData')
-						.eq('qr_id', qr_reference)
+					const {
+						data: { user },
+					} = await supabase.auth.getUser();
+					const {
+						data: getTest,
+						error: errorTest,
+					} = await supabase
+						.from("test2")
+						.select("testData")
+						.eq("qr_id", qr_reference)
 						.single();
 
 					if (errorTest) {
-						console.error('Error fetching initial testData3:', errorTest);
+						console.error(
+							"Error fetching initial testData3:",
+							errorTest
+						);
 					} else {
 						if (isSwitchOn) {
-							const arr = getTest.testData.filter((item) => item.owner === user.id);
+							const arr = getTest.testData.filter(
+								(item) => item.owner === user.id
+							);
 							setCart(arr);
-						}
-						else {
+						} else {
 							setCart(getTest.testData);
 						}
 					}
 				} catch (error) {
-					console.error('Error fetching initial data4:', error);
+					console.error("Error fetching initial data4:", error);
 				}
 			};
 
@@ -276,18 +309,18 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 					{
 						event: "*",
 						schema: "public",
-						table: 'test2',
+						table: "test2",
 						filter: `qr_id=eq.${qr_reference}`,
 					},
 					(payload) => {
-
 						if (isSwitchOn) {
-							console.log("STORE FRONT SWITCH ON")
-							const arr = payload.new.testData.filter((item) => item.owner === user.id);
+							console.log("STORE FRONT SWITCH ON");
+							const arr = payload.new.testData.filter(
+								(item) => item.owner === user.id
+							);
 							setCart(arr);
-						}
-						else {
-							console.log("STORE FRONT SWITCH OFF")
+						} else {
+							console.log("STORE FRONT SWITCH OFF");
 							setCart(payload.new.testData);
 						}
 					}
@@ -296,10 +329,9 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 
 			return () => {
 				channel.unsubscribe();
-			}
+			};
 		}, [])
-	)
-
+	);
 
 	const handlePress = async () => {
 		await AsyncStorage.setItem("cart", JSON.stringify(cart));
@@ -307,21 +339,22 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 			pathname: "/cart/customer",
 			params: { qr_reference: qr_reference, ownItems: isSwitchOn },
 		});
-
 	};
 
 	const handleAddToCart = async (item) => {
-		const { data: { user } } = await supabase.auth.getUser()
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
 		try {
 			// Fetch the existing testData from the database
 			const { data: getTest, error: errorTest } = await supabase
-				.from('test2')
-				.select('testData')
-				.eq('qr_id', qr_reference)
+				.from("test2")
+				.select("testData")
+				.eq("qr_id", qr_reference)
 				.single();
 
 			if (errorTest) {
-				console.error('Error fetching testData5:', errorTest);
+				console.error("Error fetching testData5:", errorTest);
 				return;
 			}
 
@@ -334,39 +367,32 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 				cost: item.cost,
 			};
 
-
 			if (role === "Customer") {
 				newItem.owner = user.id;
+			} else {
+				console.log("ADDING FROM MERCHANT");
+				newItem.owner = "";
 			}
-			else {
-				console.log("ADDING FROM MERCHANT")
-				newItem.owner = ""
-			}
-
 
 			// Combine the existing testData with the new item
 			const newData = [...getTest.testData, newItem];
 
 			// Update the testData in the database
 			const { data, error } = await supabase
-				.from('test2')
+				.from("test2")
 				.update({ testData: newData })
-				.eq('qr_id', qr_reference)
+				.eq("qr_id", qr_reference)
 				.select();
 
 			if (error) {
-				console.error('Error updating testData:', error);
+				console.error("Error updating testData:", error);
 				return;
 			}
 
-
-
 			// Update the local cart state
-
 		} catch (error) {
-			console.error('Error handling AddToCart:', error);
+			console.error("Error handling AddToCart:", error);
 		}
-
 	};
 
 	return (
@@ -382,23 +408,28 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 					<View>
 						<View style={styles.modalHeader}>
 							<Text style={styles.modalTitle}>Settings</Text>
-
 						</View>
 
 						<View style={styles.modalBody}>
-						<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-						<Text style={{ fontWeight: 'bold' }}>Only See My Items</Text>
-	<Switch value={isSwitchOn} onValueChange={onToggleSwitch} />
-    
-</View>
-
-
+							<View
+								style={{
+									flexDirection: "row",
+									justifyContent: "space-between",
+									alignItems: "center",
+								}}
+							>
+								<Text style={{ fontWeight: "bold" }}>
+									Only See My Items
+								</Text>
+								<Switch
+									value={isSwitchOn}
+									onValueChange={onToggleSwitch}
+								/>
+							</View>
 						</View>
 					</View>
 
-
 					<View style={styles.modalFooter}>
-
 						<TouchableOpacity
 							onPress={hideModal}
 							style={[styles.button, styles.createButton]}
@@ -408,9 +439,8 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 					</View>
 				</Modal>
 			</Portal>
-
 			<ScrollView style={{ padding: 10 }}>
-			<MoneyCard handleAddToCart={handleAddToCart} />
+				<MoneyCard handleAddToCart={handleAddToCart} />
 				{mockData.map((item) => (
 					<Card
 						key={item.id}
@@ -432,7 +462,9 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 								width: "100%",
 							}}
 						>
-							<Title style={{ color: "#fff" }}>{item.name} - {item.cost}$</Title>
+							<Title style={{ color: "#fff" }}>
+								{item.name} - {item.cost}$
+							</Title>
 							<Paragraph style={{ color: "#fff" }}>
 								{item.description}
 							</Paragraph>
@@ -442,7 +474,7 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 							style={{ objectFit: "cover", height: 100 }}
 						/>
 						<Button
-							mode="contained"
+							mode="outlined"
 							style={{
 								margin: 10,
 								borderRadius: 10,
@@ -494,13 +526,13 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 					}}
 					onPress={() => {
 						router.push({
-													pathname: "/pending",
-													params: { qr_reference: qr_reference },
-												})
+							pathname: "/pending",
+							params: { qr_reference: qr_reference },
+						});
 					}}
 					icon={"cart"}
 				>
-					View Pending 
+					View Pending
 				</Button>
 			</Card>
 		</View>
@@ -510,7 +542,7 @@ console.log("IS THE SWITCH ON" , isSwitchOn)
 const styles = StyleSheet.create({
 	modal: {
 		justifyContent: "flex-start",
-		justifyContent: 'space-between',
+		justifyContent: "space-between",
 		backgroundColor: "white",
 		padding: 20,
 		alignSelf: "center",

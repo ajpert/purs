@@ -1,4 +1,4 @@
-import { router, useNavigation, useRouter, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ScrollView,
@@ -8,7 +8,13 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { Appbar, Modal, PaperProvider, Portal } from "react-native-paper";
+import {
+	Appbar,
+	Button,
+	Modal,
+	PaperProvider,
+	Portal,
+} from "react-native-paper";
 import QrCreator from "../../components/QrCreator";
 import { supabase } from "../../lib/supabase";
 
@@ -30,29 +36,27 @@ function Header(props) {
 
 	return (
 		<Appbar.Header
-			statusBarHeight={30}
-			style={{ backgroundColor: "black" }}
+			statusBarHeight={20}
+			style={{
+				backgroundColor: "black",
+				display: "flex",
+				flexDirection: "row",
+				justifyContent: "space-evenly",
+				alignItems: "center",
+				height: 100,
+			}}
 		>
-			{isNavigationReady && (
-				<Appbar.BackAction
-					onPress={() => {
-						router.back();
-					}}
-					color={"white"}
-				/>
-			)}
-
-			<Appbar.Content
-				title="Event Manager"
-				titleStyle={{ color: "white", fontSize: 30 }}
-			/>
-			<Appbar.Action
+			<Text style={{ color: "white", fontSize: 24, fontWeight: "bold" }}>
+				Merchant Hub
+			</Text>
+			<Button
 				icon="plus"
-				color={"white"}
-				onPress={() => {
-					props.showModal();
-				}}
-			/>
+				mode="text"
+				compact
+				onPress={() => props.showModal()}
+			>
+				Add Event
+			</Button>
 		</Appbar.Header>
 	);
 }
@@ -67,54 +71,56 @@ const randomUUID = () => {
 const EventManager = (props) => {
 	const [visible, setVisible] = React.useState(false);
 	const [eventName, setEventName] = useState("");
-	const showModal = () => { 
-		setCancleOrDelete('Cancle'); 
-		setUpdateOrAdd('Create');
-		setEventName(""); 
-		setGenerateQrData(randomUUID()); 
-		setVisible(true) };
+	const showModal = () => {
+		setCancelOrDelete("Cancel");
+		setUpdateOrAdd("Create");
+		setEventName("");
+		setGenerateQrData(randomUUID());
+		setVisible(true);
+	};
 
 	const hideModal = () => {
-
-		setVisible(false)
-		
+		setVisible(false);
 	};
 	const [cart, setCart] = useState([]);
-	
+
 	const [events, setEvents] = useState([]);
 
 	const [currentEventId, setCurrentEventId] = useState(null);
 	const { session, profile } = useAuth();
 	const [generateQrData, setGenerateQrData] = useState(null);
 
-
-	const [cancelOrDelete, setCancleOrDelete] = useState('Cancel');
-	const [updateOrCreate, setUpdateOrAdd] = useState('Create');
+	const [cancelOrDelete, setCancelOrDelete] = useState("Cancel");
+	const [updateOrCreate, setUpdateOrAdd] = useState("Create");
 
 	const addNewEvent = async () => {
-		console.log(generateQrData)
-		const { data: { user } } = await supabase.auth.getUser()
+		console.log(generateQrData);
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
 		try {
-			const { data: qrData, error: qrError } = await supabase.
-				from('test2')
+			const { data: qrData, error: qrError } = await supabase
+				.from("test2")
 				.insert([
 					{
 						testData: [],
-						qr_id: generateQrData
-					}
+						qr_id: generateQrData,
+					},
 				])
-				.select()
+				.select();
 
-			console.log(qrData, qrError)
-
+			console.log(qrData, qrError);
 
 			console.log("session", user.id);
 			const { data, error } = await supabase
 				.from("events")
-				.insert({ name: eventName, phone_number: "12392855148", cart_id: generateQrData })
+				.insert({
+					name: eventName,
+					phone_number: "12392855148",
+					cart_id: generateQrData,
+				})
 				.eq("merchant_id", user.id);
 			getEvents();
-	
 			if (error) {
 				throw error;
 			}
@@ -124,7 +130,9 @@ const EventManager = (props) => {
 	};
 
 	const updateEvent = async () => {
-		const { data: { user } } = await supabase.auth.getUser()
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
 		try {
 			const { data, error } = await supabase
 				.from("events")
@@ -134,8 +142,8 @@ const EventManager = (props) => {
 			if (error) {
 				console.log("Error updating event:", error);
 				// Display an error message to the user if needed
-			  }		  
-			console.log("UPDATE", data)
+			}
+			console.log("UPDATE", data);
 			await getEvents();
 			if (error) {
 				throw error;
@@ -143,61 +151,63 @@ const EventManager = (props) => {
 		} catch (error) {
 			console.log("Error", error);
 		}
-
-	}
-
+	};
 
 	function handleLongPress(event) {
-		setCancleOrDelete('Delete');
-		setUpdateOrAdd('Update');
+		setCancelOrDelete("Delete");
+		setUpdateOrAdd("Update");
 		setGenerateQrData(event.cart_id);
 		setEventName(event.name);
 		setVisible(true);
 		setCurrentEventId(event.id);
-		console.log(event)
-
+		console.log(event);
 	}
 
 	const getEvents = async () => {
-		const { data: { user } } = await supabase.auth.getUser();
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
 		try {
-		  const { data, error } = await supabase
-			.from("events")
-			.select("*")
-			.eq("merchant_id", user.id);
-	  
-		  if (error) {
-			throw error;
-		  }
-	  
-		  // Fetch cart data for each event
-		  const eventsWithCarts = await Promise.all(
-			data.map(async (event) => {
-			  const { data: cartData, error: cartError } = await supabase
-				.from("test2")
+			const { data, error } = await supabase
+				.from("events")
 				.select("*")
-				.eq("qr_id", event.cart_id)
-				.single();
-	  
-			  if (cartError) {
-				console.error("Error fetching cart data:", cartError);
-				return event;
-			  }
-			  console.log("CART DATA beep bop", cartData.pending_orders)
-	  
-			  return {
-				...event,
-				cart: cartData.testData,
-				pending_orders: cartData.pending_orders,
-			  };
-			})
-		  );
-	  
-		  setEvents(eventsWithCarts);
+				.eq("merchant_id", user.id);
+
+			if (error) {
+				throw error;
+			}
+
+			// Fetch cart data for each event
+			const eventsWithCarts = await Promise.all(
+				data.map(async (event) => {
+					const {
+						data: cartData,
+						error: cartError,
+					} = await supabase
+						.from("test2")
+						.select("*")
+						.eq("qr_id", event.cart_id)
+						.single();
+
+					if (cartError) {
+						console.error("Error fetching cart data:", cartError);
+						return event;
+					}
+					console.log("CART DATA beep bop", cartData.pending_orders);
+
+					return {
+						...event,
+						cart: cartData.testData,
+						pending_orders: cartData.pending_orders,
+					};
+				})
+			);
+
+			setEvents(eventsWithCarts);
 		} catch (error) {
-		  console.log("Error", error);
+			console.log("Error", error);
 		}
-	  };
+	};
 
 	/*
 		useEffect(() => {
@@ -209,41 +219,45 @@ const EventManager = (props) => {
 	useEffect(() => {
 		(async () => {
 			await getEvents();
-		}
-		
-		)();
+		})();
 	}, []);
-console.log("HERE")
-useFocusEffect(
-	React.useCallback(() => {
-		getEvents();
-	}, [])
-)
+	console.log("HERE");
 	useFocusEffect(
 		React.useCallback(() => {
-
-	
+			getEvents();
+		}, [])
+	);
+	useFocusEffect(
+		React.useCallback(() => {
 			// Check if events array is not empty
 			if (events.length > 0) {
 				const fetchInitialData = async () => {
 					try {
-						const { data: { user } } = await supabase.auth.getUser();
-						const { data: getTest, error: errorTest } = await supabase
-							.from('test2')
-							.select('testData')
-							.eq('qr_id', events[0].cart_id)
+						const {
+							data: { user },
+						} = await supabase.auth.getUser();
+						const {
+							data: getTest,
+							error: errorTest,
+						} = await supabase
+							.from("test2")
+							.select("testData")
+							.eq("qr_id", events[0].cart_id)
 							.single();
-	
+
 						if (errorTest) {
-							console.error('Error fetching initial testData3:', errorTest);
+							console.error(
+								"Error fetching initial testData3:",
+								errorTest
+							);
 						} else {
 							setCart(getTest.testData);
 						}
 					} catch (error) {
-						console.error('Error fetching initial data4:', error);
+						console.error("Error fetching initial data4:", error);
 					}
 				};
-	
+
 				fetchInitialData();
 
 				const channel = supabase
@@ -253,24 +267,24 @@ useFocusEffect(
 						{
 							event: "*",
 							schema: "public",
-							table: 'test2',
-							filter: `qr_id=in.(${events.map(event => event.cart_id).join(',')})`,
+							table: "test2",
+							filter: `qr_id=in.(${events
+								.map((event) => event.cart_id)
+								.join(",")})`,
 						},
 						(payload) => {
-							console.log("ASDF")
+							console.log("ASDF");
 							getEvents();
 						}
 					)
 					.subscribe();
-	
+
 				return () => {
 					channel.unsubscribe();
-				}
+				};
 			}
 		}, [events])
-	)
-
-
+	);
 
 	async function addOrUpdateEvent(type) {
 		if (type === "Create") {
@@ -289,63 +303,64 @@ useFocusEffect(
 				alert("Please enter an event name");
 				return;
 			}
-			console.log("IN HERE")
+			console.log("IN HERE");
 			await updateEvent();
 			setEventName("");
-			setCancleOrDelete('Cancel');
-			setUpdateOrAdd('Create');
+			setCancelOrDelete("Cancel");
+			setUpdateOrAdd("Create");
 			hideModal();
-
 		}
-
 	}
 	return (
 		<PaperProvider>
 			<Portal>
 				<Modal
+					dismissable
 					visible={visible}
 					onDismiss={hideModal}
 					contentContainerStyle={styles.modal}
-					presentationStyle="overFullScreen"
+					presentationStyle="formSheet"
 				>
 					<View style={styles.modalHeader}>
-						<Text style={styles.modalTitle}>QR Creation</Text>
+						<Text style={styles.modalTitle}>QR Code Creator</Text>
+						<View className="border-b-2 border-gray-200 w-4/6 mx-auto mt-2 mb-2"></View>
+						<Text className="text-center mt-2 w-56 mx-auto">
+							This is how your customers will identify your store.
+						</Text>
 					</View>
-
 					<View style={styles.modalBody}>
 						<Text
 							style={{ alignSelf: "center", fontWeight: "bold" }}
 						>
-							Name
+							QR Code Name
 						</Text>
+						<View className="border-b-2 border-gray-200 w-4/6 mx-auto mt-2 mb-3"></View>
 						<TextInput
 							style={styles.input}
-							placeholder="Enter Event Name"
+							placeholder="A Descriptive Name"
 							placeholderTextColor="#888"
 							value={eventName}
 							onChangeText={setEventName}
 						/>
-
-						<View style={styles.optionsContainer}>
-							<Text style={styles.optionPlaceholder}>
-								Options Placeholder
-							</Text>
-						</View>
 					</View>
-					<QrCreator id={generateQrData} />
-					<View style={styles.modalFooter}>
-						<TouchableOpacity
-							style={[styles.button, styles.cancelButton]}
-							onPress={hideModal}
-						>
-							<Text style={styles.buttonText}>Cancel</Text>
-						</TouchableOpacity>
-						<TouchableOpacity
-							onPress={() => addOrUpdateEvent(updateOrCreate)}
-							style={[styles.button, styles.createButton]}
-						>
-							<Text style={styles.buttonText}>{updateOrCreate}</Text>
-						</TouchableOpacity>
+					<View className="flex flex-col gap-8">
+						<QrCreator id={generateQrData} />
+						<View className="flex flex-row justify-between">
+							<Button
+								style={styles.cancelButton}
+								onPress={hideModal}
+								mode="contained"
+							>
+								{cancelOrDelete}
+							</Button>
+							<Button
+								mode="contained"
+								style={styles.cancelButton}
+								onPress={() => addOrUpdateEvent(updateOrCreate)}
+							>
+								{updateOrCreate}
+							</Button>
+						</View>
 					</View>
 				</Modal>
 			</Portal>
@@ -356,23 +371,42 @@ useFocusEffect(
 				<ScrollView>
 					<View style={styles.container}>
 						{events.length === 0 && (
-							<Text style={{ color: "white", fontSize: 20 }}>
-								No events found
-							</Text>
+							<>
+								<Text style={{ color: "white", fontSize: 14 }}>
+									No history found.
+									{"\n"}
+								</Text>
+								<Text
+									style={{
+										color: "white",
+										fontSize: 14,
+										width: 250,
+									}}
+								>
+									Click the "Add Event" button to create a new
+									event.
+								</Text>
+							</>
 						)}
 						{events &&
 							events.map((event) => {
 								return (
-									<>
+									<React.Fragment key={event.id}>
 										<TouchableOpacity
 											id={event.id}
 											key={event.id}
 											style={styles.eventButton}
-											onLongPress={() => handleLongPress(event)}
+											onLongPress={() =>
+												handleLongPress(event)
+											}
 											onPress={() => {
 												router.push({
-													pathname: "/storefront/customer",
-													params: { qr_reference: event.cart_id },
+													pathname:
+														"/storefront/customer",
+													params: {
+														qr_reference:
+															event.cart_id,
+													},
 												});
 											}}
 										>
@@ -412,7 +446,8 @@ useFocusEffect(
 															fontSize: 15,
 														}}
 													>
-														Items in cart: {event.cart.length}
+														Items in cart:{" "}
+														{event.cart.length}
 													</Text>
 													<Text
 														style={{
@@ -420,7 +455,11 @@ useFocusEffect(
 															fontSize: 15,
 														}}
 													>
-														pending_orders: {event.pending_orders.length}
+														pending_orders:{" "}
+														{
+															event.pending_orders
+																.length
+														}
 													</Text>
 												</View>
 
@@ -432,7 +471,7 @@ useFocusEffect(
 												/>
 											</View>
 										</TouchableOpacity>
-									</>
+									</React.Fragment>
 								);
 							})}
 					</View>
@@ -526,7 +565,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 20,
 		borderRadius: 25,
 		height: 80,
-		width: "80%",
+		width: "50%",
 		justifyContent: "center",
 		marginBottom: 15,
 	},
